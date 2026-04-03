@@ -1,22 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/login_bloc.dart';
-import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/login_event.dart';
-import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/login_state.dart';
 import 'package:hamrokrishi_app/app/routes/route_constants.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class FarmerRegisterScreen extends StatefulWidget {
+  const FarmerRegisterScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<FarmerRegisterScreen> createState() => _FarmerRegisterScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _FarmerRegisterScreenState extends State<FarmerRegisterScreen> {
   final TextEditingController _identityController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  bool _isPasswordHidden = true;
 
   @override
   void dispose() {
@@ -29,17 +26,25 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAF7),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => context.pop(),
+        ),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(horizontal: 24.w),
           child: Column(
             children: [
-              SizedBox(height: 40.h),
+              SizedBox(height: 10.h),
               _buildLogo(),
               SizedBox(height: 24.h),
               _buildHeader(),
               SizedBox(height: 48.h),
-              _buildLoginForm(),
+              _buildRegisterForm(),
               SizedBox(height: 32.h),
               _buildFooter(),
               SizedBox(height: 24.h),
@@ -51,9 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildLogo() {
-    return 
-        Image.asset('assets/logo/app.png', width: 85,);
-     
+    return Image.asset('assets/logo/app.png', width: 85);
   }
 
   Widget _buildHeader() {
@@ -74,12 +77,11 @@ class _LoginScreenState extends State<LoginScreen> {
             fontSize: 12.sp,
             fontWeight: FontWeight.w600,
             color: Colors.grey[600],
-           
           ),
         ),
         SizedBox(height: 20.h),
         Text(
-          'Welcome Back',
+          'Farmers Register',
           style: TextStyle(
             fontSize: 20.sp,
             fontWeight: FontWeight.bold,
@@ -88,7 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         SizedBox(height: 8.h),
         Text(
-          'Access your farm and market insights',
+          'Join us to connect with buyers directly',
           style: TextStyle(
             fontSize: 14.sp,
             color: Colors.grey[600],
@@ -98,7 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildLoginForm() {
+  Widget _buildRegisterForm() {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -115,35 +117,34 @@ class _LoginScreenState extends State<LoginScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildInputLabel('Email'),
+          _buildInputLabel('Full Name'),
+          SizedBox(height: 8.h),
+          _buildTextField(
+            controller: TextEditingController(),
+            hint: 'Your Name',
+            icon: Icons.person_outline,
+          ),
+          SizedBox(height: 24.h),
+          _buildInputLabel('Email or Phone'),
           SizedBox(height: 8.h),
           _buildTextField(
             controller: _identityController,
             hint: 'Phone or email address',
-            icon: Icons.person_outline,
+            icon: Icons.contact_mail_outlined,
           ),
           SizedBox(height: 24.h),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildInputLabel('Password'),
-          
-            ],
-          ),
+          _buildInputLabel('Password'),
           SizedBox(height: 8.h),
-          BlocBuilder<LoginBloc, LoginState>(
-            buildWhen: (previous, current) => previous.isPasswordHidden != current.isPasswordHidden,
-            builder: (context, state) {
-              return _buildTextField(
-                controller: _passwordController,
-                hint: '••••••••',
-                icon: Icons.lock_outline,
-                isPassword: true,
-                obscureText: state.isPasswordHidden,
-                onIconTap: () {
-                  context.read<LoginBloc>().add(const LoginEvent.togglePasswordVisibility());
-                },
-              );
+          _buildTextField(
+            controller: _passwordController,
+            hint: '••••••••',
+            icon: Icons.lock_outline,
+            isPassword: true,
+            obscureText: _isPasswordHidden,
+            onIconTap: () {
+              setState(() {
+                _isPasswordHidden = !_isPasswordHidden;
+              });
             },
           ),
           SizedBox(height: 24.h),
@@ -199,58 +200,31 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildSubmitButton() {
-    return BlocConsumer<LoginBloc, LoginState>(
-      listener: (context, state) {
-        state.maybeWhen(
-          success: (user, _) => context.go(AppRoutes.home),
-          failure: (error, _) => ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(error)),
+    return SizedBox(
+      width: double.infinity,
+      height: 50.h,
+      child: ElevatedButton(
+        onPressed: () {},
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF2D5A27),
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.r),
           ),
-          orElse: () {},
-        );
-      },
-      builder: (context, state) {
-        final isLoading = state is Loading;
-        return SizedBox(
-          width: double.infinity,
-          height: 50.h,
-          child: ElevatedButton(
-            onPressed: isLoading
-                ? null
-                : () {
-                    context.read<LoginBloc>().add(LoginEvent.loginSubmitted(
-                          identity: _identityController.text,
-                          password: _passwordController.text,
-                        ));
-                  },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2D5A27),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16.r),
-              ),
-              elevation: 0,
+          elevation: 0,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Register',
+              style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold),
             ),
-            child: isLoading
-                ? SizedBox(
-                    height: 20.h,
-                    width: 20.h,
-                    child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                  )
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Enter Hamro Krishi',
-                        style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(width: 8.w),
-                      Icon(Icons.arrow_forward, size: 20.sp),
-                    ],
-                  ),
-          ),
-        );
-      },
+            SizedBox(width: 8.w),
+            Icon(Icons.arrow_forward, size: 20.sp),
+          ],
+        ),
+      ),
     );
   }
 
@@ -279,15 +253,15 @@ class _LoginScreenState extends State<LoginScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'New to Hamro Krishi? ',
+              'Already have an account? ',
               style: TextStyle(fontSize: 13.sp, color: Colors.grey[600]),
             ),
             GestureDetector(
               onTap: () {
-                context.push(AppRoutes.registerRole);
+                context.push(AppRoutes.login);
               },
               child: Text(
-                'Create Account',
+                'Sign In',
                 style: TextStyle(
                   fontSize: 13.sp,
                   fontWeight: FontWeight.bold,
@@ -297,8 +271,6 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ],
         ),
-        SizedBox(height: 48.h),
-       
       ],
     );
   }

@@ -1,4 +1,6 @@
+import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
+import 'package:hamrokrishi_app/app/core/constants/api_constants.dart';
 import 'package:hamrokrishi_app/app/features/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:hamrokrishi_app/app/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:hamrokrishi_app/app/features/auth/domain/repositories/auth_repository.dart';
@@ -23,6 +25,15 @@ Future<void> init() async {
   
   // Data sources
   sl.registerLazySingleton<AuthRemoteDataSource>(
-    () => AuthRemoteDataSourceImpl(),
+    () => AuthRemoteDataSourceImpl(sl()),
   );
+
+  // Core
+  sl.registerLazySingleton(() => Dio(
+    BaseOptions(
+      baseUrl: ApiConstants.baseUrl,
+      connectTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 10),
+    ),
+  ));
 }
