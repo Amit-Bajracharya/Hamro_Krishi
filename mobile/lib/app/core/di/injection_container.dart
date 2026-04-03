@@ -1,0 +1,28 @@
+import 'package:get_it/get_it.dart';
+import 'package:hamrokrishi_app/app/features/auth/data/datasources/auth_remote_datasource.dart';
+import 'package:hamrokrishi_app/app/features/auth/data/repositories/auth_repository_impl.dart';
+import 'package:hamrokrishi_app/app/features/auth/domain/repositories/auth_repository.dart';
+import 'package:hamrokrishi_app/app/features/auth/domain/usecases/login_use_case.dart';
+import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/login_bloc.dart';
+
+final sl = GetIt.instance;
+
+Future<void> init() async {
+  // Features - Auth
+  
+  // Bloc
+  sl.registerFactory(() => LoginBloc(loginUseCase: sl()));
+  
+  // Use cases
+  sl.registerLazySingleton(() => LoginUseCase(sl()));
+  
+  // Repository
+  sl.registerLazySingleton<AuthRepository>(
+    () => AuthRepositoryImpl(sl()),
+  );
+  
+  // Data sources
+  sl.registerLazySingleton<AuthRemoteDataSource>(
+    () => AuthRemoteDataSourceImpl(),
+  );
+}
