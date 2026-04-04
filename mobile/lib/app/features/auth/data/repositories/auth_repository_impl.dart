@@ -19,5 +19,29 @@ class AuthRepositoryImpl implements AuthRepository {
     } catch (e) {
       return Left(e.toString());
     }
+  } // ← THIS was missing
+
+  @override
+  Future<Either<String, void>> registerFarmer({
+    required String name,
+    required String email,
+    required String password,
+    required String phone,
+    required double latitude,
+    required double longitude,
+  }) async {
+    try {
+      await remoteDataSource.registerFarmer(
+        name: name,
+        email: email,
+        password: password,
+        phone: phone,
+        latitude: latitude,
+        longitude: longitude,
+      );
+      return const Right(null);
+    } catch (e) {
+      return Left(e.toString());
+    }
   }
 }
