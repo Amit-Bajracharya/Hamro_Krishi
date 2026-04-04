@@ -1,18 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:hamrokrishi_app/app/core/constants/api_constants.dart';
 import 'package:hamrokrishi_app/app/core/di/injection_container.dart' as di;
 import 'package:hamrokrishi_app/app/routes/app_router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  await Supabase.initialize(
-    url: ApiConstants.supabaseUrl,
-    anonKey: ApiConstants.supabaseAnonKey,
-  );
   
   await di.init();
   runApp(const MyApp());
