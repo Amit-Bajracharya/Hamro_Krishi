@@ -8,6 +8,7 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+app.use('/api/auth', require('./routes/auth'));
 app.use('/api/farmers',   require('./routes/farmer'));
 app.use('/api/customers', require('./routes/customer'));
 app.use('/api/traders',   require('./routes/trader'));

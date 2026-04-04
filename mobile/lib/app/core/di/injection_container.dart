@@ -13,6 +13,12 @@ import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/login_bloc.d
 import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/register_farmer_bloc.dart';
 import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/register_trader_bloc.dart';
 import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/register_consumer_bloc.dart';
+import 'package:hamrokrishi_app/app/features/product/data/datasources/product_remote_data_source.dart';
+import 'package:hamrokrishi_app/app/features/product/data/repositories/product_repository_impl.dart';
+import 'package:hamrokrishi_app/app/features/product/domain/repositories/product_repository.dart';
+import 'package:hamrokrishi_app/app/features/product/domain/usecases/add_product_use_case.dart';
+import 'package:hamrokrishi_app/app/features/product/presentation/bloc/product_bloc.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 final sl = GetIt.instance;
 
@@ -25,20 +31,33 @@ Future<void> init() async {
   sl.registerFactory(() => RegisterTraderBloc(registerTraderUseCase: sl(), locationService: sl()));
   sl.registerFactory(() => RegisterConsumerBloc(registerConsumerUseCase: sl(), locationService: sl()));
   
+  // Features - Product
+  sl.registerFactory(() => ProductBloc(addProductUseCase: sl()));
+  
   // Use cases
   sl.registerLazySingleton(() => LoginUseCase(sl()));
   sl.registerLazySingleton(() => RegisterFarmerUseCase(sl()));
   sl.registerLazySingleton(() => RegisterTraderUseCase(sl()));
   sl.registerLazySingleton(() => RegisterConsumerUseCase(sl()));
   
+  sl.registerLazySingleton(() => AddProductUseCase(sl()));
+  
   // Repository
   sl.registerLazySingleton<AuthRepository>(
     () => AuthRepositoryImpl(sl()),
+  );
+
+  sl.registerLazySingleton<IProductRepository>(
+    () => ProductRepositoryImpl(remoteDataSource: sl()),
   );
   
   // Data sources
   sl.registerLazySingleton<AuthRemoteDataSource>(
     () => AuthRemoteDataSourceImpl(sl()),
+  );
+
+  sl.registerLazySingleton<IProductRemoteDataSource>(
+    () => ProductRemoteDataSourceImpl(dio: sl(), supabaseClient: sl()),
   );
 
   // Core
@@ -50,4 +69,6 @@ Future<void> init() async {
       receiveTimeout: const Duration(seconds: 10),
     ),
   ));
+
+  sl.registerLazySingleton(() => Supabase.instance.client);
 }

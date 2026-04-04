@@ -4,7 +4,13 @@ import 'package:go_router/go_router.dart';
 import 'package:hamrokrishi_app/app/core/di/injection_container.dart';
 import 'package:hamrokrishi_app/app/features/dashboard/presentation/pages/navigation_shell.dart';
 import 'package:hamrokrishi_app/app/features/dashboard/presentation/pages/role_based_dashboard.dart';
-import 'package:hamrokrishi_app/app/features/dashboard/presentation/pages/market_screen.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/pages/farmer_crops_screen.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/pages/farmer_requests_screen.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/pages/farmer_finances_screen.dart';
+import 'package:hamrokrishi_app/app/features/product/presentation/pages/list_harvest_screen.dart';
+import 'package:hamrokrishi_app/app/features/product/presentation/bloc/product_bloc.dart';
+
+import 'package:hamrokrishi_app/app/features/market/presentation/pages/trader_market_screen.dart';
 import 'package:hamrokrishi_app/app/features/dashboard/presentation/pages/contracts_screen.dart';
 import 'package:hamrokrishi_app/app/features/dashboard/presentation/pages/account_screen.dart';
 import 'package:hamrokrishi_app/app/features/introduction_screen/presentation/pages/introduction_screen.dart';
@@ -57,6 +63,11 @@ final GoRouter router = GoRouter(
         child: const TraderRegisterScreen(),
       ),
     ),
+    GoRoute(
+      path: AppRoutes.middlewareRegister,
+      builder: (context, state) => const MiddlewareRegisterScreen(),
+    ),
+
    
     GoRoute(
       path: AppRoutes.consumerRegister,
@@ -76,42 +87,95 @@ final GoRouter router = GoRouter(
         );
       },
       branches: [
+        // Branch 0: Shared Home (Dashboard)
         StatefulShellBranch(
           initialLocation: AppRoutes.farmerHome,
           routes: [
             GoRoute(
-              path: AppRoutes.farmerHome, 
+              path: AppRoutes.farmerHome,
+              builder: (context, state) => const RoleBasedDashboard(),
+            ),
+            GoRoute(
+              path: AppRoutes.traderHome,
+              builder: (context, state) => const RoleBasedDashboard(),
+            ),
+            GoRoute(
+              path: AppRoutes.consumerHome,
               builder: (context, state) => const RoleBasedDashboard(),
             ),
           ],
         ),
+        // Branch 1: Market (Trader/Consumer)
         StatefulShellBranch(
-          initialLocation: '/market',
+          initialLocation: AppRoutes.market,
           routes: [
             GoRoute(
-              path: '/market',
-              builder: (context, state) => const MarketScreen(),
+              path: AppRoutes.market,
+              builder: (context, state) => const TraderMarketScreen(),
             ),
           ],
         ),
+        // Branch 2: Contracts (Trader/Consumer)
         StatefulShellBranch(
-          initialLocation: '/contracts',
+          initialLocation: AppRoutes.contracts,
           routes: [
             GoRoute(
-              path: '/contracts',
+              path: AppRoutes.contracts,
               builder: (context, state) => const ContractsScreen(),
             ),
           ],
         ),
+        // Branch 3: Account (Trader/Consumer)
         StatefulShellBranch(
-          initialLocation: '/account',
+          initialLocation: AppRoutes.account,
           routes: [
             GoRoute(
-              path: '/account',
+              path: AppRoutes.account,
               builder: (context, state) => const AccountScreen(),
             ),
           ],
         ),
+        // Branch 4: Farmer Crops
+        StatefulShellBranch(
+          initialLocation: AppRoutes.farmerCrops,
+          routes: [
+            GoRoute(
+              path: AppRoutes.farmerCrops,
+              builder: (context, state) => const FarmerCropsScreen(),
+              routes: [
+                GoRoute(
+                  path: 'list-harvest', // path should be relative or absolute. GoRouter handles child paths.
+                  builder: (context, state) => BlocProvider(
+                    create: (context) => sl<ProductBloc>(),
+                    child: const ListHarvestScreen(),
+                  ),
+                ),
+              ],
+            ),
+
+          ],
+        ),
+        // Branch 5: Farmer Requests
+        StatefulShellBranch(
+          initialLocation: AppRoutes.farmerRequests,
+          routes: [
+            GoRoute(
+              path: AppRoutes.farmerRequests,
+              builder: (context, state) => const FarmerRequestsScreen(),
+            ),
+          ],
+        ),
+        // Branch 6: Farmer Finances
+        StatefulShellBranch(
+          initialLocation: AppRoutes.farmerFinances,
+          routes: [
+            GoRoute(
+              path: AppRoutes.farmerFinances,
+              builder: (context, state) => const FarmerFinancesScreen(),
+            ),
+          ],
+        ),
+
       ],
     ),
   ],

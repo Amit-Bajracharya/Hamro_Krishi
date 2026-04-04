@@ -9,5 +9,13 @@ class AppRoutes {
   static const String farmerHome = '/farmer-home';
   static const String traderHome = '/trader-home';
   static const String consumerHome = '/consumer-home';
- 
+  static const String market = '/market';
+  static const String contracts = '/contracts';
+  static const String account = '/account';
+  // Farmer-specific routes
+  static const String farmerCrops = '/farmer-crops';
+  static const String farmerRequests = '/farmer-requests';
+  static const String farmerFinances = '/farmer-finances';
+  static const String listHarvest = '/list-harvest';
+
 }

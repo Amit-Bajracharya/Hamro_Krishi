@@ -58,9 +58,9 @@ class AppNavigationBar extends StatelessWidget {
       case 'farmer':
         return [
           NavigationItem(Icons.grid_view_rounded, 'DASHBOARD'),
-          NavigationItem(Icons.storefront_rounded, 'MARKET'),
-          NavigationItem(Icons.description_rounded, 'CONTRACTS'),
-          NavigationItem(Icons.person_rounded, 'ACCOUNT'),
+          NavigationItem(Icons.eco, 'CROPS'),
+          NavigationItem(Icons.request_page, 'REQUESTS'),
+          NavigationItem(Icons.account_balance_wallet, 'FINANCES'),
         ];
       case 'middlemen':
       case 'trader':
@@ -75,6 +75,7 @@ class AppNavigationBar extends StatelessWidget {
         return [
           NavigationItem(Icons.grid_view_rounded, 'DASHBOARD'),
           NavigationItem(Icons.storefront_rounded, 'MARKET'),
+          NavigationItem(Icons.description_rounded, 'CONTRACTS'),
           NavigationItem(Icons.person_rounded, 'ACCOUNT'),
         ];
       default:

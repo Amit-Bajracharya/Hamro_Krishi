@@ -2,10 +2,10 @@ const db = require('../db');
 
 // POST /api/products
 exports.createProduct = async (req, res) => {
-  const { name, category, harvest_date, expiry_date, price, quantity, farmer_id, latitude, longitude } = req.body;
+  const { name, category, harvest_date, expiry_date, price, quantity, farmer_id, latitude, longitude, image_url } = req.body;
 
-  if (!name || !category || !expiry_date || !price || !quantity || !latitude || !longitude) {
-    return res.status(400).json({ success: false, error: 'name, category, expiry_date, price, quantity, latitude, longitude are required' });
+  if (!name || !category || !expiry_date || !price || !quantity || latitude === undefined || longitude === undefined) {
+    return res.status(400).json({ success: false, error: 'name, category, expiry_date, price, quantity, latitude, and longitude are required' });
   }
 
   if (!['vegetable', 'fruit', 'grain'].includes(category)) {
@@ -14,9 +14,9 @@ exports.createProduct = async (req, res) => {
 
   try {
     const result = await db.query(
-      `INSERT INTO public.product (name, category, harvest_date, expiry_date, price, quantity, farmer_id, latitude, longitude)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
-      [name, category, harvest_date || null, expiry_date, price, quantity, farmer_id || null, latitude, longitude]
+      `INSERT INTO public.product (name, category, harvest_date, expiry_date, price, quantity, farmer_id, latitude, longitude, image_url)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
+      [name, category, harvest_date || null, expiry_date, price, quantity, farmer_id || null, latitude, longitude, image_url || null]
     );
     res.status(201).json({ success: true, data: result.rows[0] });
   } catch (error) {
@@ -25,11 +25,12 @@ exports.createProduct = async (req, res) => {
       return res.status(404).json({ success: false, error: 'Referenced farmer does not exist.' });
     }
     if (error.code === '23514') {
-      return res.status(400).json({ success: false, error: 'expiry_date must be greater than or equal to harvest_date.' });
+      return res.status(400).json({ success: false, error: 'expiry_date must be greater than or equal to harvest_date and category must be valid.' });
     }
     res.status(500).json({ success: false, error: 'Server error creating product.' });
   }
 };
+
 
 // GET /api/products
 exports.getAllProducts = async (req, res) => {

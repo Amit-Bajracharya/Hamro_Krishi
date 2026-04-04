@@ -57,14 +57,29 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         },
       );
       
+      print('Response status: ${response.statusCode}');
+      print('Response data type: ${response.data.runtimeType}');
+      print('Response data: ${response.data}');
+      
       if (response.statusCode == 200) {
-        return UserEntity.fromJson(response.data);
+        // Check if response.data is a Map
+        if (response.data is Map<String, dynamic>) {
+          return UserEntity.fromJson(response.data as Map<String, dynamic>);
+        } else {
+          throw Exception('Invalid response format: Expected Map, got ${response.data.runtimeType}');
+        }
       } else {
         throw Exception(response.data['message'] ?? 'Login failed');
       }
     } on DioException catch (e) {
+      print('DioException: ${e.message}');
+      print('Response data: ${e.response?.data}');
       final message = e.response?.data?['message'] ?? e.message ?? 'Network error';
       throw Exception(message);
+    } catch (e) {
+      print('General exception: $e');
+      print('Exception type: ${e.runtimeType}');
+      rethrow;
     }
   }
 

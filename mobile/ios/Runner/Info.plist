@@ -68,5 +68,10 @@
 		</array>
 		<key>UIStatusBarHidden</key>
 		<false/>
+		<key>NSCameraUsageDescription</key>
+		<string>We need access to your camera to take photos of your products for listing.</string>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>We need access to your photo library to choose photos of your products for listing.</string>
 	</dict>
 </plist>
+
