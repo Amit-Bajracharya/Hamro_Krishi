@@ -5,14 +5,51 @@ import 'package:hamrokrishi_app/app/features/market/presentation/bloc/trader_mar
 import 'package:hamrokrishi_app/app/features/market/presentation/bloc/trader_market_event.dart';
 import 'package:hamrokrishi_app/app/features/market/presentation/bloc/trader_market_state.dart';
 import 'package:hamrokrishi_app/app/features/product/domain/entities/product_entity.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/contract_bloc.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/contract_event.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/contract_state.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/domain/entities/contract_entity.dart';
+import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/login_bloc.dart';
+import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/login_state.dart';
+import 'package:hamrokrishi_app/app/core/di/injection_container.dart';
+import 'package:intl/intl.dart';
 
 class TraderMarketScreen extends StatelessWidget {
   const TraderMarketScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF9FAF7),
+    return BlocProvider(
+      create: (context) => sl<ContractBloc>(),
+      child: BlocListener<ContractBloc, ContractState>(
+        listener: (context, state) {
+          state.whenOrNull(
+            submitting: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Submitting contract offer...')),
+              );
+            },
+            success: (contract) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Contract offer submitted successfully!'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+              Navigator.of(context).pop(); // Close dialog on success
+            },
+            failure: (message) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Error: $message'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            },
+          );
+        },
+        child: Scaffold(
+          backgroundColor: const Color(0xFFF9FAF7),
       body: SafeArea(
         child: BlocBuilder<TraderMarketBloc, TraderMarketState>(
           builder: (context, state) {
@@ -275,131 +312,307 @@ class TraderMarketScreen extends StatelessWidget {
             itemCount: products.length,
             itemBuilder: (context, index) {
               final product = products[index];
-              return _buildProductCard(product);
+              return _buildProductCard(context, product);
             },
           ),
       ],
     );
   }
 
-  Widget _buildProductCard(ProductEntity product) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Image Section (Medium Size)
-          ClipRRect(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-            child: Container(
-              height: 180.h, // Medium height
-              width: double.infinity,
-              color: const Color(0xFF2D5A27).withOpacity(0.05),
-              child: product.imageUrl != null
-                  ? Image.network(
-                      product.imageUrl!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Icon(
-                        Icons.image_not_supported_outlined,
-                        color: Colors.grey[300],
-                        size: 40.sp,
-                      ),
-                    )
-                  : Icon(
-                      Icons.eco,
-                      color: const Color(0xFF2D5A27).withOpacity(0.2),
-                      size: 50.sp,
-                    ),
+  Widget _buildProductCard(BuildContext context, ProductEntity product) {
+    return InkWell(
+      onTap: () => _showOfferContractDialog(context, product),
+      borderRadius: BorderRadius.circular(24.r),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
             ),
-          ),
-          // Details Section
-          Padding(
-            padding: EdgeInsets.all(20.w),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        product.name,
-                        style: TextStyle(
-                          fontSize: 18.sp,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF1B3A1A),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image Section (Medium Size)
+            ClipRRect(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+              child: Container(
+                height: 180.h, // Medium height
+                width: double.infinity,
+                color: const Color(0xFF2D5A27).withOpacity(0.05),
+                child: product.imageUrl != null
+                    ? Image.network(
+                        product.imageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Icon(
+                          Icons.image_not_supported_outlined,
+                          color: Colors.grey[300],
+                          size: 40.sp,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      )
+                    : Icon(
+                        Icons.eco,
+                        color: const Color(0xFF2D5A27).withOpacity(0.2),
+                        size: 50.sp,
                       ),
-                    ),
-                    Text(
-                      'Rs. ${product.price.toStringAsFixed(0)}/kg',
-                      style: TextStyle(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w800,
-                        color: const Color(0xFF2D5A27),
+              ),
+            ),
+            // Details Section
+            Padding(
+              padding: EdgeInsets.all(20.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          product.name,
+                          style: TextStyle(
+                            fontSize: 18.sp,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF1B3A1A),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 8.h),
-                Row(
-                  children: [
-                    Icon(Icons.person_outline, size: 14.sp, color: Colors.grey[500]),
-                    SizedBox(width: 4.w),
-                    Text(
-                      product.farmerName ?? 'Unknown Farmer',
-                      style: TextStyle(
-                        fontSize: 13.sp,
-                        color: Colors.grey[600],
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const Spacer(),
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE8F5E9),
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                      child: Text(
-                        '${product.quantity} kg avail.',
+                      Text(
+                        'Rs. ${product.price.toStringAsFixed(0)}/kg',
                         style: TextStyle(
-                          fontSize: 11.sp,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w800,
                           color: const Color(0xFF2D5A27),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
+                  SizedBox(height: 8.h),
+                  Row(
+                    children: [
+                      Icon(Icons.person_outline, size: 14.sp, color: Colors.grey[500]),
+                      SizedBox(width: 4.w),
+                      Text(
+                        product.farmerName ?? 'Unknown Farmer',
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const Spacer(),
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE8F5E9),
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                        child: Text(
+                          '${product.quantity} kg avail.',
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF2D5A27),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 12.h),
+                  // Location if available
+                  Row(
+                    children: [
+                      Icon(Icons.location_on_outlined, size: 14.sp, color: Colors.grey[400]),
+                      SizedBox(width: 4.w),
+                      Text(
+                        'Kathmandu, Nepal', // Placeholder for now
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          color: Colors.grey[500],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showOfferContractDialog(BuildContext context, ProductEntity product) {
+    final quantityController = TextEditingController(text: product.quantity.toString());
+    final priceController = TextEditingController(text: product.price.toString());
+    final formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => BlocProvider.value(
+        value: context.read<ContractBloc>(),
+        child: AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+          title: Column(
+            children: [
+              Text(
+                'Offer Contract',
+                style: TextStyle(
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF1B3A1A),
                 ),
-                SizedBox(height: 12.h),
-                // Location if available
-                Row(
-                  children: [
-                    Icon(Icons.location_on_outlined, size: 14.sp, color: Colors.grey[400]),
-                    SizedBox(width: 4.w),
-                    Text(
-                      'Kathmandu, Nepal', // Placeholder for now
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        color: Colors.grey[500],
+              ),
+              SizedBox(height: 4.h),
+              Text(
+                'For ${product.name}',
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildDialogInfoRow('Farmer', product.farmerName ?? 'Unknown'),
+                  _buildDialogInfoRow('Farmer Price', 'Rs. ${product.price}/kg'),
+                  SizedBox(height: 20.h),
+                  Text(
+                    'Quantity (kg)',
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+                  TextFormField(
+                    controller: quantityController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      hintText: 'Enter quantity',
+                      filled: true,
+                      fillColor: Colors.grey[100],
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: BorderSide.none,
                       ),
                     ),
-                  ],
+                    validator: (value) =>
+                        value == null || value.isEmpty ? 'Please enter quantity' : null,
+                  ),
+                  SizedBox(height: 16.h),
+                  Text(
+                    'Your Selling Price (Rs./kg)',
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+                  TextFormField(
+                    controller: priceController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      hintText: 'Enter your price',
+                      filled: true,
+                      fillColor: Colors.grey[100],
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    validator: (value) =>
+                        value == null || value.isEmpty ? 'Please enter price' : null,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text(
+                'Cancel',
+                style: TextStyle(color: Colors.grey[600]),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (formKey.currentState!.validate()) {
+                  final loginState = context.read<LoginBloc>().state;
+                  final traderId = loginState.maybeWhen(
+                    success: (user, _) => user.id,
+                    orElse: () => '',
+                  );
+
+                  if (traderId.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Please login to offer contract')),
+                    );
+                    return;
+                  }
+
+                  final contract = ContractEntity(
+                    farmerId: product.farmerId ?? '',
+                    middlemanId: traderId,
+                    productId: product.id ?? '',
+                    quantity: double.parse(quantityController.text),
+                    farmerSellingPrice: product.price,
+                    traderSellingPrice: double.parse(priceController.text),
+                    startDate: DateTime.now(),
+                    status: 'active',
+                  );
+
+                  context.read<ContractBloc>().add(ContractEvent.createContract(contract));
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2D5A27),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
                 ),
-              ],
+              ),
+              child: const Text('Submit Offer', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDialogInfoRow(String label, String value) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 4.h),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 13.sp,
+              color: Colors.grey[600],
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 13.sp,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF1B3A1A),
             ),
           ),
         ],

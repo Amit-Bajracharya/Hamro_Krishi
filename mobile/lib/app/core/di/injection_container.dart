@@ -34,6 +34,11 @@ import 'package:hamrokrishi_app/app/features/dashboard/data/repositories/farmer_
 import 'package:hamrokrishi_app/app/features/dashboard/domain/repositories/farmer_repository.dart';
 import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/trader_dashboard_bloc.dart';
 import 'package:hamrokrishi_app/app/features/market/presentation/bloc/trader_market_bloc.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/data/datasources/contract_remote_data_source.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/data/repositories/contract_repository_impl.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/domain/repositories/contract_repository.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/domain/usecases/create_contract_use_case.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/contract_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final sl = GetIt.instance;
@@ -63,11 +68,13 @@ Future<void> init() async {
         farmerRepository: sl(),
         productRepository: sl(),
       ));
+  sl.registerFactory(() => ContractBloc(createContractUseCase: sl()));
   
   // Use cases
   sl.registerLazySingleton(() => LoginUseCase(sl()));
-  sl.registerLazySingleton(() => RegisterFarmerUseCase(sl()));
-  sl.registerLazySingleton(() => RegisterTraderUseCase(sl()));
+  sl.registerLazySingleton(() => GetWeatherUseCase(repository: sl()));
+  sl.registerLazySingleton(() => GetPredictionUseCase(repository: sl()));
+  sl.registerLazySingleton(() => CreateContractUseCase(repository: sl()));
   sl.registerLazySingleton(() => RegisterConsumerUseCase(sl()));
   
   sl.registerLazySingleton(() => AddProductUseCase(sl()));
@@ -95,6 +102,10 @@ Future<void> init() async {
   sl.registerLazySingleton<IFarmerRepository>(
     () => FarmerRepositoryImpl(remoteDataSource: sl()),
   );
+
+  sl.registerLazySingleton<IContractRepository>(
+    () => ContractRepositoryImpl(remoteDataSource: sl()),
+  );
   
   // Data sources
   sl.registerLazySingleton<AuthRemoteDataSource>(
@@ -115,6 +126,10 @@ Future<void> init() async {
 
   sl.registerLazySingleton<IFarmerRemoteDataSource>(
     () => FarmerRemoteDataSourceImpl(dio: sl()),
+  );
+
+  sl.registerLazySingleton<IContractRemoteDataSource>(
+    () => ContractRemoteDataSourceImpl(dio: sl()),
   );
 
   // Core
