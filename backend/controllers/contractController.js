@@ -2,24 +2,27 @@ const db = require('../db');
 
 // Create a new contract
 exports.createContract = async (req, res) => {
-  const { farmer_id, middleman_id, transaction_id, contract_terms, financial_security, revenue_share, jurisdiction, start_date, end_date, status } = req.body;
+  const { 
+    farmer_id, middleman_id, transaction_id, product_id, 
+    quantity, farmer_selling_price, trader_selling_price, 
+    start_date, status 
+  } = req.body;
 
   try {
     const result = await db.query(
       `INSERT INTO public.contracts 
-        (farmer_id, middleman_id, transaction_id, contract_terms, financial_security, revenue_share, jurisdiction, start_date, end_date, status) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, COALESCE($10, 'active')) 
+        (farmer_id, middleman_id, transaction_id, product_id, quantity, farmer_selling_price, trader_selling_price, start_date, status) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, COALESCE($9, 'active')) 
        RETURNING *`,
       [
         farmer_id || null, 
         middleman_id || null, 
         transaction_id || null, 
-        contract_terms || null, 
-        financial_security || null, 
-        revenue_share || null, 
-        jurisdiction || null, 
+        product_id || null,
+        quantity || null,
+        farmer_selling_price || null,
+        trader_selling_price || null,
         start_date || null, 
-        end_date || null, 
         status || null
       ]
     );
@@ -74,7 +77,11 @@ exports.getContractById = async (req, res) => {
 // Update a contract by ID
 exports.updateContract = async (req, res) => {
   const { id } = req.params;
-  const { farmer_id, middleman_id, transaction_id, contract_terms, financial_security, revenue_share, jurisdiction, start_date, end_date, status } = req.body;
+  const { 
+    farmer_id, middleman_id, transaction_id, product_id, 
+    quantity, farmer_selling_price, trader_selling_price, 
+    start_date, status 
+  } = req.body;
 
   try {
     // Check if contract exists
@@ -89,26 +96,24 @@ exports.updateContract = async (req, res) => {
          farmer_id = COALESCE($1, farmer_id),
          middleman_id = COALESCE($2, middleman_id),
          transaction_id = COALESCE($3, transaction_id),
-         contract_terms = COALESCE($4, contract_terms),
-         financial_security = COALESCE($5, financial_security),
-         revenue_share = COALESCE($6, revenue_share),
-         jurisdiction = COALESCE($7, jurisdiction),
+         product_id = COALESCE($4, product_id),
+         quantity = COALESCE($5, quantity),
+         farmer_selling_price = COALESCE($6, farmer_selling_price),
+         trader_selling_price = COALESCE($7, trader_selling_price),
          start_date = COALESCE($8, start_date),
-         end_date = COALESCE($9, end_date),
-         status = COALESCE($10, status),
+         status = COALESCE($9, status),
          updated_at = now()
-       WHERE id = $11 
+       WHERE id = $10 
        RETURNING *`,
       [
         farmer_id || null, 
         middleman_id || null, 
-        transaction_id || null, 
-        contract_terms || null, 
-        financial_security || null, 
-        revenue_share || null, 
-        jurisdiction || null, 
+        transaction_id || null,
+        product_id || null,
+        quantity || null,
+        farmer_selling_price || null,
+        trader_selling_price || null, 
         start_date || null, 
-        end_date || null, 
         status || null, 
         id
       ]

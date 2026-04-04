@@ -2,23 +2,23 @@ const db = require('../db');
 
 // POST /api/trader-products
 exports.createTraderProduct = async (req, res) => {
-  const { original_product_id, trader_id, selling_price, quantity_for_sale, latitude, longitude } = req.body;
+  const { contract_id, quantity_for_sale, latitude, longitude } = req.body;
 
-  if (!original_product_id || !trader_id || !selling_price || !quantity_for_sale || !latitude || !longitude) {
-    return res.status(400).json({ success: false, error: 'original_product_id, trader_id, selling_price, quantity_for_sale, latitude, longitude are required' });
+  if (!contract_id || !quantity_for_sale || !latitude || !longitude) {
+    return res.status(400).json({ success: false, error: 'contract_id, quantity_for_sale, latitude, longitude are required' });
   }
 
   try {
     const result = await db.query(
-      `INSERT INTO public.trader_product (original_product_id, trader_id, selling_price, quantity_for_sale, latitude, longitude)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [original_product_id, trader_id, selling_price, quantity_for_sale, latitude, longitude]
+      `INSERT INTO public.trader_product (contract_id, quantity_for_sale, latitude, longitude)
+       VALUES ($1, $2, $3, $4) RETURNING *`,
+      [contract_id, quantity_for_sale, latitude, longitude]
     );
     res.status(201).json({ success: true, data: result.rows[0] });
   } catch (error) {
     console.error('Create Trader Product Error:', error);
     if (error.code === '23503') {
-      return res.status(404).json({ success: false, error: 'Referenced original product or middleman does not exist.' });
+      return res.status(404).json({ success: false, error: 'Referenced contract does not exist.' });
     }
     res.status(500).json({ success: false, error: 'Server error creating trader product.' });
   }
@@ -29,11 +29,13 @@ exports.getAllTraderProducts = async (req, res) => {
   try {
     const query = `
       SELECT tp.*, 
+             c.trader_selling_price AS selling_price,
              p.name AS product_name, p.category, p.harvest_date, p.expiry_date,
              m.business_name AS trader_business, m.name AS trader_name
       FROM public.trader_product tp
-      LEFT JOIN public.product p ON tp.original_product_id = p.id
-      LEFT JOIN public.middlemen m ON tp.trader_id = m.id
+      LEFT JOIN public.contracts c ON tp.contract_id = c.id
+      LEFT JOIN public.product p ON c.product_id = p.id
+      LEFT JOIN public.middlemen m ON c.middleman_id = m.id
       ORDER BY tp.created_at DESC
     `;
     const result = await db.query(query);
@@ -49,11 +51,13 @@ exports.getTraderProductById = async (req, res) => {
   try {
     const result = await db.query(
       `SELECT tp.*, 
-              p.name AS product_name, p.category, p.harvest_date, p.expiry_date,
-              m.business_name AS trader_business, m.name AS trader_name
+             c.trader_selling_price AS selling_price,
+             p.name AS product_name, p.category, p.harvest_date, p.expiry_date,
+             m.business_name AS trader_business, m.name AS trader_name
        FROM public.trader_product tp
-       LEFT JOIN public.product p ON tp.original_product_id = p.id
-       LEFT JOIN public.middlemen m ON tp.trader_id = m.id
+       LEFT JOIN public.contracts c ON tp.contract_id = c.id
+       LEFT JOIN public.product p ON c.product_id = p.id
+       LEFT JOIN public.middlemen m ON c.middleman_id = m.id
        WHERE tp.id = $1`,
       [req.params.id]
     );
@@ -67,16 +71,19 @@ exports.getTraderProductById = async (req, res) => {
   }
 };
 
-// GET /api/trader-products/trader/:traderId
+// GET /api/trader-products/trader/:middlemanId
 exports.getTraderProductsByTrader = async (req, res) => {
   try {
     const result = await db.query(
-      `SELECT tp.*, p.name AS product_name, p.category
+      `SELECT tp.*, 
+             c.trader_selling_price AS selling_price,
+             p.name AS product_name, p.category
        FROM public.trader_product tp
-       LEFT JOIN public.product p ON tp.original_product_id = p.id
-       WHERE tp.trader_id = $1 
+       LEFT JOIN public.contracts c ON tp.contract_id = c.id
+       LEFT JOIN public.product p ON c.product_id = p.id
+       WHERE c.middleman_id = $1 
        ORDER BY tp.created_at DESC`,
-      [req.params.traderId]
+      [req.params.middlemanId]
     );
     res.json({ success: true, count: result.rowCount, data: result.rows });
   } catch (error) {
@@ -88,7 +95,7 @@ exports.getTraderProductsByTrader = async (req, res) => {
 // PUT /api/trader-products/:id
 exports.updateTraderProduct = async (req, res) => {
   const { id } = req.params;
-  const allowedFields = ['selling_price', 'quantity_for_sale', 'latitude', 'longitude', 'status'];
+  const allowedFields = ['quantity_for_sale', 'latitude', 'longitude', 'status'];
   const updates = [], values = [];
   let i = 1;
 
