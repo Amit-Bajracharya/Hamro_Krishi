@@ -3,7 +3,7 @@ const db = require('../db');
 // Create a new contract
 exports.createContract = async (req, res) => {
   const { 
-    farmer_id, middleman_id, transaction_id, product_id, 
+    farmer_id, middleman_id, product_id, 
     quantity, farmer_selling_price, trader_selling_price, 
     start_date, status 
   } = req.body;
@@ -11,13 +11,12 @@ exports.createContract = async (req, res) => {
   try {
     const result = await db.query(
       `INSERT INTO public.contracts 
-        (farmer_id, middleman_id, transaction_id, product_id, quantity, farmer_selling_price, trader_selling_price, start_date, status) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, COALESCE($9, 'active')) 
+        (farmer_id, middleman_id, product_id, quantity, farmer_selling_price, trader_selling_price, start_date, status) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, COALESCE($8, 'active')) 
        RETURNING *`,
       [
         farmer_id || null, 
         middleman_id || null, 
-        transaction_id || null, 
         product_id || null,
         quantity || null,
         farmer_selling_price || null,
@@ -78,7 +77,7 @@ exports.getContractById = async (req, res) => {
 exports.updateContract = async (req, res) => {
   const { id } = req.params;
   const { 
-    farmer_id, middleman_id, transaction_id, product_id, 
+    farmer_id, middleman_id, product_id, 
     quantity, farmer_selling_price, trader_selling_price, 
     start_date, status 
   } = req.body;
@@ -95,20 +94,18 @@ exports.updateContract = async (req, res) => {
        SET 
          farmer_id = COALESCE($1, farmer_id),
          middleman_id = COALESCE($2, middleman_id),
-         transaction_id = COALESCE($3, transaction_id),
-         product_id = COALESCE($4, product_id),
-         quantity = COALESCE($5, quantity),
-         farmer_selling_price = COALESCE($6, farmer_selling_price),
-         trader_selling_price = COALESCE($7, trader_selling_price),
-         start_date = COALESCE($8, start_date),
-         status = COALESCE($9, status),
+         product_id = COALESCE($3, product_id),
+         quantity = COALESCE($4, quantity),
+         farmer_selling_price = COALESCE($5, farmer_selling_price),
+         trader_selling_price = COALESCE($6, trader_selling_price),
+         start_date = COALESCE($7, start_date),
+         status = COALESCE($8, status),
          updated_at = now()
-       WHERE id = $10 
+       WHERE id = $9 
        RETURNING *`,
       [
         farmer_id || null, 
         middleman_id || null, 
-        transaction_id || null,
         product_id || null,
         quantity || null,
         farmer_selling_price || null,
