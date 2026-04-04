@@ -14,4 +14,5 @@ class RegisterFarmerEvent with _$RegisterFarmerEvent {
   }) = RegisterSubmitted;
 
   const factory RegisterFarmerEvent.togglePasswordVisibility() = TogglePasswordVisibility;
+  const factory RegisterFarmerEvent.fetchLocation() = FetchLocation;
 }

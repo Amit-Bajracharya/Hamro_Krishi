@@ -14,4 +14,5 @@ class RegisterConsumerEvent with _$RegisterConsumerEvent {
   }) = RegisterSubmitted;
 
   const factory RegisterConsumerEvent.togglePasswordVisibility() = TogglePasswordVisibility;
+  const factory RegisterConsumerEvent.fetchLocation() = FetchLocation;
 }

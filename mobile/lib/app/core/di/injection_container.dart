@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hamrokrishi_app/app/core/constants/api_constants.dart';
 import 'package:hamrokrishi_app/app/features/auth/data/datasources/auth_remote_datasource.dart';
+import 'package:hamrokrishi_app/app/core/services/location_service.dart';
 import 'package:hamrokrishi_app/app/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:hamrokrishi_app/app/features/auth/domain/repositories/auth_repository.dart';
 import 'package:hamrokrishi_app/app/features/auth/domain/usecases/login_use_case.dart';
@@ -19,10 +20,10 @@ Future<void> init() async {
   // Features - Auth
   
   // Bloc
-  sl.registerFactory(() => LoginBloc(loginUseCase: sl()));
-  sl.registerFactory(() => RegisterFarmerBloc(registerFarmerUseCase: sl()));
-  sl.registerFactory(() => RegisterTraderBloc(registerTraderUseCase: sl()));
-  sl.registerFactory(() => RegisterConsumerBloc(registerConsumerUseCase: sl()));
+  sl.registerLazySingleton(() => LoginBloc(loginUseCase: sl()));
+  sl.registerFactory(() => RegisterFarmerBloc(registerFarmerUseCase: sl(), locationService: sl()));
+  sl.registerFactory(() => RegisterTraderBloc(registerTraderUseCase: sl(), locationService: sl()));
+  sl.registerFactory(() => RegisterConsumerBloc(registerConsumerUseCase: sl(), locationService: sl()));
   
   // Use cases
   sl.registerLazySingleton(() => LoginUseCase(sl()));
@@ -41,6 +42,7 @@ Future<void> init() async {
   );
 
   // Core
+  sl.registerLazySingleton(() => LocationService());
   sl.registerLazySingleton(() => Dio(
     BaseOptions(
       baseUrl: BASE_URL,

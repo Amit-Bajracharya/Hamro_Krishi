@@ -32,6 +32,7 @@ class _RegisterRoleScreenState extends State<RegisterRoleScreen> {
       'barColor': const Color(0xFFEF6C00),
       'image': 'assets/images/role_trader.png',
     },
+  
     {
       'title': 'Consumer (Grahak)',
       

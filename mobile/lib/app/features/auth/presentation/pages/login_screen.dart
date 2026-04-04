@@ -202,7 +202,14 @@ class _LoginScreenState extends State<LoginScreen> {
     return BlocConsumer<LoginBloc, LoginState>(
       listener: (context, state) {
         state.maybeWhen(
-          success: (user, _) => context.go(AppRoutes.home),
+          success: (user, _) {
+            // Debug: Print user info
+            print('Login successful - User: ${user.name}, Role: ${user.role}');
+            
+            // Route all users to the same dashboard route
+            // RoleBasedDashboard will handle showing the correct dashboard based on role
+            context.go(AppRoutes.farmerHome);
+          },
           failure: (error, _) => ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(error)),
           ),

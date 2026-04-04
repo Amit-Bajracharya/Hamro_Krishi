@@ -16,4 +16,5 @@ class RegisterTraderEvent with _$RegisterTraderEvent {
   }) = RegisterSubmitted;
 
   const factory RegisterTraderEvent.togglePasswordVisibility() = TogglePasswordVisibility;
+  const factory RegisterTraderEvent.fetchLocation() = FetchLocation;
 }
