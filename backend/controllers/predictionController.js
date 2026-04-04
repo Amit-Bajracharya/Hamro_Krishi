@@ -4,32 +4,74 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-exports.predictDemand = async (req, res) => {
-    try {
-        const { productName, category, context } = req.query;
+// Simple in-memory cache to prevent hitting API limits
+const predictionCache = new Map();
+const CACHE_DURATION_MS = 1000 * 60 * 60 * 24; // Cache for 24 hours
 
-        if (!productName) {
-            return res.status(400).json({ error: 'productName is required in query parameters' });
+exports.getDashboardPredictions = async (req, res) => {
+    try {
+        const currentMonth = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
+        
+        // Use a single global cache key for the dashboard for the current month
+        const cacheKey = `dashboard_prediction_${currentMonth}`.toLowerCase();
+
+        // 1. Check if we already fetched the dashboard data recently
+        if (predictionCache.has(cacheKey)) {
+            const cachedItem = predictionCache.get(cacheKey);
+            
+            // If the cache is still valid (less than 24 hours old), return it immediately
+            if (Date.now() - cachedItem.timestamp < CACHE_DURATION_MS) {
+                console.log(`Returning cached dashboard predictions...`);
+                return res.status(200).json({
+                    success: true,
+                    data: cachedItem.data,
+                    cached: true
+                });
+            } else {
+                // Expired, remove it
+                predictionCache.delete(cacheKey);
+            }
         }
 
-        const currentMonth = new Date().toLocaleString('default', { month: 'long' });
+        console.log(`Asking Gemini AI for Dashboard Predictions...`);
         
         const prompt = `You are an expert AI agricultural market analyst in Nepal.
-I need a demand prediction for a specific product. Output MUST be valid JSON (do not include markdown wrapping like \`\`\`json).
-Here are the details:
-- Product Name: ${productName}
-- Category: ${category || 'General Agriculture'}
-- Current Month: ${currentMonth}
-- Additional Context: ${context || 'None'}
+I need a comprehensive dashboard overview of the highest demand crops right now.
+The current date is: ${currentMonth}.
 
-Please provide a realistic demand prediction based on seasonality, general market trends for this product, and any given context.
+Output MUST be exactly valid JSON (do not include markdown wrapping like \`\`\`json).
+Please provide the top 5 trending/highest demand items for each of the following 3 categories: "vegetables", "fruits", and "grains".
+For each item, give the demand level, estimated price trend, and a short 1-sentence reasoning.
+
 Your response MUST exactly follow this strict JSON format:
 {
-  "productName": "${productName}",
-  "demandLevel": "High" | "Medium" | "Low",
-  "estimatedPriceTrend": "Increasing" | "Stable" | "Decreasing",
-  "reasoning": "A short, one sentence explanation."
-}`;
+  "vegetables": [
+    {
+      "productName": "Tomato",
+      "demandLevel": "High",
+      "estimatedPriceTrend": "Increasing",
+      "reasoning": "A short explanation here."
+    }
+  ],
+  "fruits": [
+    {
+       "productName": "Apple",
+       "demandLevel": "Medium",
+       "estimatedPriceTrend": "Stable",
+       "reasoning": "A short explanation here."
+    }
+  ],
+  "grains": [
+    {
+       "productName": "Rice",
+       "demandLevel": "High",
+       "estimatedPriceTrend": "Increasing",
+       "reasoning": "A short explanation here."
+    }
+  ]
+}
+
+Make sure each category array has exactly 5 items.`;
 
         const result = await model.generateContent(prompt);
         let text = result.response.text();
@@ -49,12 +91,19 @@ Your response MUST exactly follow this strict JSON format:
             return res.status(500).json({ error: 'AI returned invalid formatted response', rawOutput: text });
         }
 
-        res.status(200).json({
-            success: true,
+        // 2. Save the successful AI response into our cache for future requests!
+        predictionCache.set(cacheKey, {
+            timestamp: Date.now(),
             data: parsedJson
         });
+
+        res.status(200).json({
+            success: true,
+            data: parsedJson,
+            cached: false
+        });
     } catch (error) {
-        console.error('Error predicting demand:', error);
-        res.status(500).json({ error: 'Failed to predict demand', details: error.message });
+        console.error('Error fetching dashboard prediction:', error);
+        res.status(500).json({ error: 'Failed to fetch dashboard prediction', details: error.message });
     }
 };
