@@ -1,35 +1,24 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-const db = require('./db');
-const middlemenRoutes = require('./routes/traders');
-const productRoutes = require('./routes/product');
-const reviewRoutes = require('./routes/review');
-
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Routes
-app.use('/api/middlemen', middlemenRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/reviews', reviewRoutes);
-
-
+app.use('/api/farmers',   require('./routes/farmers'));
+app.use('/api/consumers', require('./routes/consumers'));
+app.use('/api/traders',   require('./routes/traders'));
+app.use('/api/products',  require('./routes/product'));
+app.use('/api/orders',    require('./routes/order'));
+app.use('/api/reviews',   require('./routes/review'));
 
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to Hamro Krishi API' });
 });
 
-const farmersRouter = require('./routes/farmers');
-app.use('/api/farmers', farmersRouter);
-
-
-// Start Server
 app.listen(port, () => {
   console.log(`🚀 Server running on http://localhost:${port}`);
 });
