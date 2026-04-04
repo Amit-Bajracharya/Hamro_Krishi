@@ -7,7 +7,7 @@ const {
   getConsumerById,
   updateConsumer,
   deleteConsumer,
-} = require('../controllers/consumerController');
+} = require('../controllers/customerController');
 
 router.get('/nearby', getNearbyConsumers); // must be before /:id
 router.get('/',       getAllConsumers);
