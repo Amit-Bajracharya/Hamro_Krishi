@@ -6,7 +6,7 @@ class GetPredictionUseCase {
 
   GetPredictionUseCase(this.repository);
 
-  Future<Prediction> execute(String productName) async {
+  Future<List<Prediction>> execute(String productName) async {
     return await repository.getDemandPrediction(productName);
   }
 }

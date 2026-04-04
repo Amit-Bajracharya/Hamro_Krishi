@@ -16,8 +16,8 @@ class PredictionBloc extends Bloc<PredictionEvent, PredictionState> {
   ) async {
     emit(const PredictionLoading());
     try {
-      final prediction = await getPredictionUseCase.execute(event.productName);
-      emit(PredictionLoaded(prediction));
+      final predictions = await getPredictionUseCase.execute(event.productName);
+      emit(PredictionLoaded(predictions));
     } catch (e) {
       emit(PredictionError(e.toString()));
     }

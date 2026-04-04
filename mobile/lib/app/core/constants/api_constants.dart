@@ -12,7 +12,7 @@ class ApiConstants {
   static const String consumers = '/consumers';
   static const String products = '/products';
   static const String weather = '/weather';
-  static const String prediction = '/prediction';
+  static const String prediction = '/predictions';
   static const String contracts = '/contracts';
 }
 

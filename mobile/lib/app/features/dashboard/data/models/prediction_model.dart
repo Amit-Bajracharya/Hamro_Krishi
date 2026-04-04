@@ -13,13 +13,11 @@ class PredictionModel extends Prediction {
   });
 
   factory PredictionModel.fromJson(Map<String, dynamic> json) {
-    // The backend returns it nested in { success: true, data: { ... } }
-    final data = json['data'] as Map<String, dynamic>;
     return PredictionModel(
-      productName: data['productName'] as String,
-      demandLevel: data['demandLevel'] as String,
-      estimatedPriceTrend: data['estimatedPriceTrend'] as String,
-      reasoning: data['reasoning'] as String,
+      productName: json['productName'] as String,
+      demandLevel: json['demandLevel'] as String,
+      estimatedPriceTrend: json['estimatedPriceTrend'] as String,
+      reasoning: json['reasoning'] as String? ?? '',
     );
   }
 

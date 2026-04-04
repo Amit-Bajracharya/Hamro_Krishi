@@ -72,15 +72,15 @@ Future<void> init() async {
   
   // Use cases
   sl.registerLazySingleton(() => LoginUseCase(sl()));
-  sl.registerLazySingleton(() => GetWeatherUseCase(repository: sl()));
-  sl.registerLazySingleton(() => GetPredictionUseCase(repository: sl()));
-  sl.registerLazySingleton(() => CreateContractUseCase(repository: sl()));
+  sl.registerLazySingleton(() => RegisterFarmerUseCase(sl()));
+  sl.registerLazySingleton(() => RegisterTraderUseCase(sl()));
   sl.registerLazySingleton(() => RegisterConsumerUseCase(sl()));
   
   sl.registerLazySingleton(() => AddProductUseCase(sl()));
   sl.registerLazySingleton(() => GetFarmerProductsUseCase(sl()));
   sl.registerLazySingleton(() => GetWeatherUseCase(sl()));
   sl.registerLazySingleton(() => GetPredictionUseCase(sl()));
+  sl.registerLazySingleton(() => CreateContractUseCase(repository: sl()));
   
   // Repository
   sl.registerLazySingleton<AuthRepository>(
@@ -137,8 +137,8 @@ Future<void> init() async {
   sl.registerLazySingleton(() => Dio(
     BaseOptions(
       baseUrl: BASE_URL,
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 10),
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 30),
     ),
   ));
 

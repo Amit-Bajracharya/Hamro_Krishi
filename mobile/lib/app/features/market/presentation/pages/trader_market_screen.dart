@@ -50,41 +50,43 @@ class TraderMarketScreen extends StatelessWidget {
         },
         child: Scaffold(
           backgroundColor: const Color(0xFFF9FAF7),
-      body: SafeArea(
-        child: BlocBuilder<TraderMarketBloc, TraderMarketState>(
-          builder: (context, state) {
-            return state.when(
-              initial: () => const Center(child: CircularProgressIndicator()),
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (message) => Center(child: Text('Error: $message')),
-              loaded: (farmerCount, products) => RefreshIndicator(
-                onRefresh: () async {
-                  context.read<TraderMarketBloc>().add(const TraderMarketEvent.fetchData());
-                },
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.symmetric(horizontal: 20.w),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(height: 24.h),
-                      _buildHeader(),
-                      SizedBox(height: 32.h),
-                      _buildSearchBar(),
-                      SizedBox(height: 24.h),
-                      _buildFilterChips(),
-                      SizedBox(height: 32.h),
-                      _buildMarketOverview(farmerCount, products.length),
-                      SizedBox(height: 32.h),
-                      _buildAvailableProductsSection(products),
-                      SizedBox(height: 32.h),
-                      _buildTrendingProductsSection(),
-                      SizedBox(height: 100.h), // Space for bottom navigation
-                    ],
+          body: SafeArea(
+            child: BlocBuilder<TraderMarketBloc, TraderMarketState>(
+              builder: (context, state) {
+                return state.when(
+                  initial: () => const Center(child: CircularProgressIndicator()),
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (message) => Center(child: Text('Error: $message')),
+                  loaded: (farmerCount, products) => RefreshIndicator(
+                    onRefresh: () async {
+                      context.read<TraderMarketBloc>().add(const TraderMarketEvent.fetchData());
+                    },
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.symmetric(horizontal: 20.w),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(height: 24.h),
+                          _buildHeader(),
+                          SizedBox(height: 32.h),
+                          _buildSearchBar(),
+                          SizedBox(height: 24.h),
+                          _buildFilterChips(),
+                          SizedBox(height: 32.h),
+                          _buildMarketOverview(farmerCount, products.length),
+                          SizedBox(height: 32.h),
+                          _buildAvailableProductsSection(products),
+                          SizedBox(height: 32.h),
+                          _buildTrendingProductsSection(),
+                          SizedBox(height: 100.h), // Space for bottom navigation
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            );
-          },
+                );
+              },
+            ),
+          ),
         ),
       ),
     );

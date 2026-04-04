@@ -128,12 +128,12 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( Prediction prediction)?  loaded,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( List<Prediction> predictions)?  loaded,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case PredictionInitial() when initial != null:
 return initial();case PredictionLoading() when loading != null:
 return loading();case PredictionLoaded() when loaded != null:
-return loaded(_that.prediction);case PredictionError() when error != null:
+return loaded(_that.predictions);case PredictionError() when error != null:
 return error(_that.message);case _:
   return orElse();
 
@@ -152,12 +152,12 @@ return error(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( Prediction prediction)  loaded,required TResult Function( String message)  error,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( List<Prediction> predictions)  loaded,required TResult Function( String message)  error,}) {final _that = this;
 switch (_that) {
 case PredictionInitial():
 return initial();case PredictionLoading():
 return loading();case PredictionLoaded():
-return loaded(_that.prediction);case PredictionError():
+return loaded(_that.predictions);case PredictionError():
 return error(_that.message);case _:
   throw StateError('Unexpected subclass');
 
@@ -175,12 +175,12 @@ return error(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( Prediction prediction)?  loaded,TResult? Function( String message)?  error,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( List<Prediction> predictions)?  loaded,TResult? Function( String message)?  error,}) {final _that = this;
 switch (_that) {
 case PredictionInitial() when initial != null:
 return initial();case PredictionLoading() when loading != null:
 return loading();case PredictionLoaded() when loaded != null:
-return loaded(_that.prediction);case PredictionError() when error != null:
+return loaded(_that.predictions);case PredictionError() when error != null:
 return error(_that.message);case _:
   return null;
 
@@ -257,10 +257,16 @@ String toString() {
 
 
 class PredictionLoaded implements PredictionState {
-  const PredictionLoaded(this.prediction);
+  const PredictionLoaded(final  List<Prediction> predictions): _predictions = predictions;
   
 
- final  Prediction prediction;
+ final  List<Prediction> _predictions;
+ List<Prediction> get predictions {
+  if (_predictions is EqualUnmodifiableListView) return _predictions;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_predictions);
+}
+
 
 /// Create a copy of PredictionState
 /// with the given fields replaced by the non-null parameter values.
@@ -272,16 +278,16 @@ $PredictionLoadedCopyWith<PredictionLoaded> get copyWith => _$PredictionLoadedCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PredictionLoaded&&(identical(other.prediction, prediction) || other.prediction == prediction));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PredictionLoaded&&const DeepCollectionEquality().equals(other._predictions, _predictions));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,prediction);
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_predictions));
 
 @override
 String toString() {
-  return 'PredictionState.loaded(prediction: $prediction)';
+  return 'PredictionState.loaded(predictions: $predictions)';
 }
 
 
@@ -292,7 +298,7 @@ abstract mixin class $PredictionLoadedCopyWith<$Res> implements $PredictionState
   factory $PredictionLoadedCopyWith(PredictionLoaded value, $Res Function(PredictionLoaded) _then) = _$PredictionLoadedCopyWithImpl;
 @useResult
 $Res call({
- Prediction prediction
+ List<Prediction> predictions
 });
 
 
@@ -309,10 +315,10 @@ class _$PredictionLoadedCopyWithImpl<$Res>
 
 /// Create a copy of PredictionState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? prediction = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? predictions = null,}) {
   return _then(PredictionLoaded(
-null == prediction ? _self.prediction : prediction // ignore: cast_nullable_to_non_nullable
-as Prediction,
+null == predictions ? _self._predictions : predictions // ignore: cast_nullable_to_non_nullable
+as List<Prediction>,
   ));
 }
 

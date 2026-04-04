@@ -8,7 +8,7 @@ class PredictionRepositoryImpl implements IPredictionRepository {
   PredictionRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<Prediction> getDemandPrediction(String productName) async {
+  Future<List<Prediction>> getDemandPrediction(String productName) async {
     return await remoteDataSource.getDemandPrediction(productName);
   }
 }

@@ -7,6 +7,6 @@ part 'prediction_state.freezed.dart';
 class PredictionState with _$PredictionState {
   const factory PredictionState.initial() = PredictionInitial;
   const factory PredictionState.loading() = PredictionLoading;
-  const factory PredictionState.loaded(Prediction prediction) = PredictionLoaded;
+  const factory PredictionState.loaded(List<Prediction> predictions) = PredictionLoaded;
   const factory PredictionState.error(String message) = PredictionError;
 }

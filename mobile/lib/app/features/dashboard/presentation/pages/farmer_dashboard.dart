@@ -34,9 +34,9 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
             longitude: ktmLon,
           ));
       
-      // Fetch demand prediction for Tomato by default
+      // Fetch market predictions
       context.read<PredictionBloc>().add(const PredictionEvent.fetchPrediction(
-            productName: 'Tomato',
+            productName: '', // Fetch all
           ));
     }
   }
@@ -340,7 +340,7 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
               ),
             ),
           ),
-          loaded: (prediction) => _buildPredictionContent(prediction),
+          loaded: (predictions) => _buildPredictionContent(predictions),
         );
       },
     );
@@ -349,7 +349,6 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
   Widget _buildPredictionContainer({required Widget child}) {
     return Container(
       width: double.infinity,
-      height: 200.h,
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
@@ -370,9 +369,60 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
     );
   }
 
-  Widget _buildPredictionContent(Prediction prediction) {
+  Widget _buildPredictionContent(List<Prediction> predictions) {
+    // Filter for specific products requested by user
+    final requestedProducts = ['Potato', 'Apple', 'Cauliflower', 'Onion', 'Bottle Gourd (Lauka)'];
+    final filteredPredictions = predictions.where((p) {
+      return requestedProducts.any((r) => 
+        p.productName.toLowerCase().contains(r.split(' ')[0].toLowerCase()));
+    }).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.auto_awesome, color: const Color(0xFF008080), size: 24.sp),
+                SizedBox(width: 8.w),
+                Text(
+                  'Market Predictions',
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF1B3A1A),
+                  ),
+                ),
+              ],
+            ),
+            GestureDetector(
+              onTap: () => _fetchPrediction(''),
+              child: Icon(Icons.refresh, color: Colors.grey[400], size: 20.sp),
+            ),
+          ],
+        ),
+        SizedBox(height: 16.h),
+        SizedBox(
+          height: 200.h,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: filteredPredictions.length,
+            separatorBuilder: (context, index) => SizedBox(width: 16.w),
+            itemBuilder: (context, index) {
+              final prediction = filteredPredictions[index];
+              return _buildPredictionCard(prediction);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPredictionCard(Prediction prediction) {
     return Container(
-      width: double.infinity,
+      width: 300.w,
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
@@ -380,12 +430,12 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20.r),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+            color: const Color(0xFF008080).withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -393,96 +443,71 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Icon(Icons.auto_awesome, color: Colors.white, size: 24.sp),
-              SizedBox(width: 12.w),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Market Prediction',
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+              Expanded(
+                child: Text(
+                  prediction.productName,
+                  style: TextStyle(
+                    fontSize: 17.sp,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
-                  Text(
-                    prediction.productName,
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      color: Colors.white.withOpacity(0.8),
-                    ),
-                  ),
-                ],
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-              const Spacer(),
-              GestureDetector(
-                onTap: () => _fetchPrediction(prediction.productName),
-                child: Icon(Icons.refresh, color: Colors.white.withOpacity(0.8), size: 20.sp),
-              ),
-            ],
-          ),
-          SizedBox(height: 16.h),
-          Row(
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    prediction.demandLevel.toUpperCase(),
-                    style: TextStyle(
-                      fontSize: 32.sp,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                    ),
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    'DEMAND LEVEL',
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                       fontWeight: FontWeight.w600,
-                      color: Colors.white.withOpacity(0.8),
-                    ),
-                  ),
-                ],
-              ),
-              const Spacer(),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  _buildPredictionDetail('Trend', prediction.estimatedPriceTrend),
-                  SizedBox(height: 8.h),
-                  _buildPredictionDetail('Status', 'AI Analyzed'),
-                ],
-              ),
-            ],
-          ),
-          SizedBox(height: 16.h),
-          Container(
-            padding: EdgeInsets.all(12.w),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.lightbulb_outline, color: Colors.white, size: 18.sp),
-                SizedBox(width: 8.w),
-                Expanded(
-                  child: Text(
-                    prediction.reasoning,
-                    style: TextStyle(
-                      fontSize: 11.sp,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.white,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                child: Text(
+                  prediction.demandLevel,
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
                 ),
-              ],
+              ),
+            ],
+          ),
+          SizedBox(height: 12.h),
+          Row(
+            children: [
+              Icon(Icons.trending_up, color: Colors.white.withValues(alpha: 0.9), size: 18.sp),
+              SizedBox(width: 6.w),
+              Text(
+                'Trend: ${prediction.estimatedPriceTrend}',
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white.withValues(alpha: 0.9),
+                ),
+              ),
+            ],
+          ),
+          const Spacer(),
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(12.w),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+            ),
+            child: Text(
+              prediction.reasoning,
+              style: TextStyle(
+                fontSize: 12.sp,
+                color: Colors.white.withValues(alpha: 0.95),
+                height: 1.4,
+                fontStyle: FontStyle.italic,
+              ),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],

@@ -1,5 +1,5 @@
 import '../entities/prediction.dart';
 
 abstract class IPredictionRepository {
-  Future<Prediction> getDemandPrediction(String productName);
+  Future<List<Prediction>> getDemandPrediction(String productName);
 }
