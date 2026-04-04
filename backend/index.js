@@ -4,6 +4,8 @@ require('dotenv').config();
 const db = require('./db');
 const middlemenRoutes = require('./routes/middlemenRoutes');
 const productRoutes = require('./routes/productRoutes');
+const reviewRoutes = require('./routes/reviewRoutes');
+
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -15,6 +17,7 @@ app.use(express.json());
 // Routes
 app.use('/api/middlemen', middlemenRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to Hamro Krishi API' });
