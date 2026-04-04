@@ -10,6 +10,8 @@ import 'package:hamrokrishi_app/app/features/auth/presentation/pages/trader_regi
 import 'package:hamrokrishi_app/app/features/auth/presentation/pages/consumer_register_screen.dart';
 import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/login_bloc.dart';
 import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/register_farmer_bloc.dart';
+import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/register_trader_bloc.dart';
+import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/register_consumer_bloc.dart';
 import 'package:hamrokrishi_app/app/routes/route_constants.dart';
 
 final GoRouter router = GoRouter(
@@ -39,11 +41,17 @@ final GoRouter router = GoRouter(
     ),
     GoRoute(
       path: AppRoutes.traderRegister,
-      builder: (context, state) => const TraderRegisterScreen(),
+      builder: (context, state) => BlocProvider(
+        create: (context) => sl<RegisterTraderBloc>(),
+        child: const TraderRegisterScreen(),
+      ),
     ),
     GoRoute(
       path: AppRoutes.consumerRegister,
-      builder: (context, state) => const ConsumerRegisterScreen(),
+      builder: (context, state) => BlocProvider(
+        create: (context) => sl<RegisterConsumerBloc>(),
+        child: const ConsumerRegisterScreen(),
+      ),
     ),
     GoRoute(
       path: AppRoutes.home,

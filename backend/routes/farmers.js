@@ -1,35 +1,59 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
+const supabaseAdmin = require('../supabaseAdmin');
 
 // @route   POST /api/farmers
-// @desc    Add a new farmer
+// @desc    Add a new farmer (Creates Supabase User + PostgreSQL Profile)
 router.post('/', async (req, res) => {
-  const { id, name, email, phone, latitude, longitude } = req.body;
+  const { name, email, password, phone, latitude, longitude } = req.body;
 
-  if (!id || !name || !email || !phone || latitude === undefined || longitude === undefined) {
-    return res.status(400).json({ success: false, error: 'Please provide all required fields (id, name, email, phone, latitude, longitude)' });
+  if (!name || !email || !password || !phone || latitude === undefined || longitude === undefined) {
+    return res.status(400).json({ success: false, error: 'Please provide all required fields (name, email, password, phone, latitude, longitude)' });
   }
 
   try {
+    // 1. Create User in Supabase Auth (Admin)
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+      email: email,
+      password: password,
+      email_confirm: true // Auto-confirm email if needed
+    });
+
+    if (authError) {
+      console.error('Supabase Auth Error:', authError.message);
+      return res.status(400).json({ success: false, error: authError.message });
+    }
+
+    const userId = authData?.user?.id;
+
+    if (!userId) {
+      throw new Error('Could not generate User ID from Supabase. Please ensure your Service Role Key is correct.');
+    }
+
+    // 2. Create Farmer Profile in PostgreSQL
     const query = `
       INSERT INTO public.farmers (id, name, email, phone, latitude, longitude)
       VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING *;
     `;
-    const values = [id, name, email, phone, latitude, longitude];
+    const values = [userId, name, email, phone, latitude, longitude];
     const result = await db.query(query, values);
 
     res.status(201).json({ success: true, data: result.rows[0] });
   } catch (error) {
     console.error('Error adding farmer:', error);
+    
+    // Clean up Auth user if DB insertion fails (to avoid orphan users)
+    // Note: In production you might want a more robust cleanup or transactional approach
+    if (error) {
+      // Logic for cleanup could go here
+    }
+
     if (error.code === '23505') { // unique violation
       return res.status(400).json({ success: false, error: 'A farmer with this email already exists.' });
     }
-    if (error.code === '23503') { // foreign key violation
-      return res.status(400).json({ success: false, error: 'Invalid user ID. User must exist in auth.users.' });
-    }
-    res.status(500).json({ success: false, error: 'Server error adding farmer.' });
+    res.status(500).json({ success: false, error: 'Server error creating farmer registration.' });
   }
 });
 

@@ -15,4 +15,24 @@ abstract class AuthRepository {
     required double latitude,
     required double longitude,
   });
+
+  Future<Either<String, void>> registerTrader({
+    required String name,
+    required String email,
+    required String password,
+    required String phone,
+    required double latitude,
+    required double longitude,
+    required String businessName,
+    required String operatingRegions,
+  });
+
+  Future<Either<String, void>> registerConsumer({
+    required String name,
+    required String email,
+    required String password,
+    required String phone,
+    required double latitude,
+    required double longitude,
+  });
 }

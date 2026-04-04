@@ -21,7 +21,12 @@ app.get('/', (req, res) => {
 });
 
 const farmersRouter = require('./routes/farmers');
+const tradersRouter = require('./routes/traders');
+const consumersRouter = require('./routes/consumers');
+
 app.use('/api/farmers', farmersRouter);
+app.use('/api/traders', tradersRouter);
+app.use('/api/consumers', consumersRouter);
 
 
 // Start Server

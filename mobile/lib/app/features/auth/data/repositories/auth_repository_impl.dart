@@ -19,7 +19,7 @@ class AuthRepositoryImpl implements AuthRepository {
     } catch (e) {
       return Left(e.toString());
     }
-  } // ← THIS was missing
+  }
 
   @override
   Future<Either<String, void>> registerFarmer({
@@ -32,6 +32,58 @@ class AuthRepositoryImpl implements AuthRepository {
   }) async {
     try {
       await remoteDataSource.registerFarmer(
+        name: name,
+        email: email,
+        password: password,
+        phone: phone,
+        latitude: latitude,
+        longitude: longitude,
+      );
+      return const Right(null);
+    } catch (e) {
+      return Left(e.toString());
+    }
+  }
+
+  @override
+  Future<Either<String, void>> registerTrader({
+    required String name,
+    required String email,
+    required String password,
+    required String phone,
+    required double latitude,
+    required double longitude,
+    required String businessName,
+    required String operatingRegions,
+  }) async {
+    try {
+      await remoteDataSource.registerTrader(
+        name: name,
+        email: email,
+        password: password,
+        phone: phone,
+        latitude: latitude,
+        longitude: longitude,
+        businessName: businessName,
+        operatingRegions: operatingRegions,
+      );
+      return const Right(null);
+    } catch (e) {
+      return Left(e.toString());
+    }
+  }
+
+  @override
+  Future<Either<String, void>> registerConsumer({
+    required String name,
+    required String email,
+    required String password,
+    required String phone,
+    required double latitude,
+    required double longitude,
+  }) async {
+    try {
+      await remoteDataSource.registerConsumer(
         name: name,
         email: email,
         password: password,
