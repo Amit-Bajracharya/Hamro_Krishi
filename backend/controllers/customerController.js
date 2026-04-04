@@ -1,267 +1,165 @@
-const supabase = require('../config/supabase');
+const db = require('../db');
+const { randomUUID } = require('crypto');
 
-/**
- * GET /api/customers
- * List all customers with optional pagination and search
- */
-const getAllCustomers = async (req, res, next) => {
+const toRad = (d) => (d * Math.PI) / 180;
+const haversine = (lat1, lon1, lat2, lon2) => {
+  const R = 6371;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+};
+
+// POST /api/consumers
+exports.createConsumer = async (req, res) => {
+  const { name, email, phone, latitude, longitude } = req.body;
+
+  if (!name || !email || !phone || latitude === undefined || longitude === undefined) {
+    return res.status(400).json({ success: false, error: 'name, email, phone, latitude, longitude are required' });
+  }
+
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const search = req.query.search || '';
-    const offset = (page - 1) * limit;
+    const id = randomUUID();
 
-    let query = supabase
-      .from('customers')
-      .select('*', { count: 'exact' })
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+    await db.query(
+      `INSERT INTO auth.users (id, email, created_at, updated_at, role, aud)
+       VALUES ($1, $2, now(), now(), 'authenticated', 'authenticated')
+       ON CONFLICT (id) DO NOTHING`,
+      [id, email]
+    );
 
-    if (search) {
-      query = query.or(
-        `name.ilike.%${search}%,email.ilike.%${search}%,phone.ilike.%${search}%`
-      );
+    const result = await db.query(
+      `INSERT INTO public.customers (id, name, email, phone, latitude, longitude)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [id, name, email, phone, latitude, longitude]
+    );
+
+    res.status(201).json({ success: true, data: result.rows[0] });
+  } catch (error) {
+    console.error('Create Consumer Error:', error);
+    if (error.code === '23505') {
+      return res.status(409).json({ success: false, error: 'A consumer with this email already exists.' });
     }
-
-    const { data, error, count } = await query;
-
-    if (error) throw error;
-
-    res.json({
-      data,
-      meta: {
-        total: count,
-        page,
-        limit,
-        totalPages: Math.ceil(count / limit),
-      },
-    });
-  } catch (err) {
-    next(err);
+    res.status(500).json({ success: false, error: 'Server error creating consumer.' });
   }
 };
 
-/**
- * GET /api/customers/:id
- * Get a single customer by ID
- */
-const getCustomerById = async (req, res, next) => {
+// GET /api/consumers
+exports.getAllConsumers = async (req, res) => {
   try {
-    const { id } = req.params;
-
-    const { data, error } = await supabase
-      .from('customers')
-      .select('*')
-      .eq('id', id)
-      .single();
-
-    if (error) {
-      if (error.code === 'PGRST116') {
-        return res.status(404).json({ error: 'Customer not found' });
-      }
-      throw error;
-    }
-
-    res.json({ data });
-  } catch (err) {
-    next(err);
+    const result = await db.query('SELECT * FROM public.customers ORDER BY created_at DESC');
+    res.json({ success: true, count: result.rowCount, data: result.rows });
+  } catch (error) {
+    console.error('Get All Consumers Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch consumers.' });
   }
 };
 
-/**
- * POST /api/customers
- * Create a new customer
- */
-const createCustomer = async (req, res, next) => {
-  try {
-    const { name, email, phone, latitude, longitude } = req.body;
+// GET /api/consumers/nearby?lat=&lng=&radius=
+exports.getNearbyConsumers = async (req, res) => {
+  const { lat, lng, radius = 10 } = req.query;
 
-    // If no ID is provided, the caller must pass an id that matches auth.users
-    // because of the FK constraint. Allow optional id from body.
-    const id = req.body.id; // must be an existing auth.users UUID
-
-    const payload = { name, email, phone, latitude, longitude };
-    if (id) payload.id = id;
-
-    const { data, error } = await supabase
-      .from('customers')
-      .insert(payload)
-      .select()
-      .single();
-
-    if (error) throw error;
-
-    res.status(201).json({ data });
-  } catch (err) {
-    next(err);
+  if (!lat || !lng) {
+    return res.status(400).json({ success: false, error: 'lat and lng are required' });
   }
-};
 
-/**
- * PUT /api/customers/:id
- * Replace a customer record (full update)
- */
-const replaceCustomer = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const { name, email, phone, latitude, longitude } = req.body;
+  const latNum = parseFloat(lat);
+  const lngNum = parseFloat(lng);
+  const radiusNum = parseFloat(radius);
 
-    const { data, error } = await supabase
-      .from('customers')
-      .update({ name, email, phone, latitude, longitude })
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) {
-      if (error.code === 'PGRST116') {
-        return res.status(404).json({ error: 'Customer not found' });
-      }
-      throw error;
-    }
-
-    res.json({ data });
-  } catch (err) {
-    next(err);
+  if (isNaN(latNum) || isNaN(lngNum) || isNaN(radiusNum)) {
+    return res.status(400).json({ success: false, error: 'lat, lng, radius must be valid numbers' });
   }
-};
 
-/**
- * PATCH /api/customers/:id
- * Partially update a customer
- */
-const updateCustomer = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const allowedFields = ['name', 'email', 'phone', 'latitude', 'longitude'];
-
-    const updates = {};
-    for (const field of allowedFields) {
-      if (req.body[field] !== undefined) {
-        updates[field] = req.body[field];
-      }
-    }
-
-    if (Object.keys(updates).length === 0) {
-      return res.status(400).json({ error: 'No valid fields provided for update' });
-    }
-
-    const { data, error } = await supabase
-      .from('customers')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) {
-      if (error.code === 'PGRST116') {
-        return res.status(404).json({ error: 'Customer not found' });
-      }
-      throw error;
-    }
-
-    res.json({ data });
-  } catch (err) {
-    next(err);
-  }
-};
-
-/**
- * DELETE /api/customers/:id
- * Delete a customer
- */
-const deleteCustomer = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-
-    const { data, error } = await supabase
-      .from('customers')
-      .delete()
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) {
-      if (error.code === 'PGRST116') {
-        return res.status(404).json({ error: 'Customer not found' });
-      }
-      throw error;
-    }
-
-    res.json({ message: 'Customer deleted successfully', data });
-  } catch (err) {
-    next(err);
-  }
-};
-
-/**
- * GET /api/customers/nearby
- * Find customers within a radius (km) of a lat/lng point
- */
-const getNearbyCustomers = async (req, res, next) => {
-  try {
-    const { lat, lng, radius = 10 } = req.query;
-
-    if (!lat || !lng) {
-      return res.status(400).json({ error: 'lat and lng query parameters are required' });
-    }
-
-    const latNum = parseFloat(lat);
-    const lngNum = parseFloat(lng);
-    const radiusNum = parseFloat(radius);
-
-    if (isNaN(latNum) || isNaN(lngNum) || isNaN(radiusNum)) {
-      return res.status(400).json({ error: 'lat, lng, and radius must be valid numbers' });
-    }
-
-    // Haversine approximation using bounding box first, then filter
     const latDelta = radiusNum / 111.0;
-    const lngDelta = radiusNum / (111.0 * Math.cos((latNum * Math.PI) / 180));
+    const lngDelta = radiusNum / (111.0 * Math.cos(toRad(latNum)));
 
-    const { data, error } = await supabase
-      .from('customers')
-      .select('*')
-      .gte('latitude', latNum - latDelta)
-      .lte('latitude', latNum + latDelta)
-      .gte('longitude', lngNum - lngDelta)
-      .lte('longitude', lngNum + lngDelta);
+    const result = await db.query(
+      `SELECT * FROM public.customers
+       WHERE latitude  BETWEEN $1 AND $2
+         AND longitude BETWEEN $3 AND $4`,
+      [latNum - latDelta, latNum + latDelta, lngNum - lngDelta, lngNum + lngDelta]
+    );
 
-    if (error) throw error;
-
-    // Precise haversine filter
-    const toRad = (deg) => (deg * Math.PI) / 180;
-    const haversine = (lat1, lon1, lat2, lon2) => {
-      const R = 6371;
-      const dLat = toRad(lat2 - lat1);
-      const dLon = toRad(lon2 - lon1);
-      const a =
-        Math.sin(dLat / 2) ** 2 +
-        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
-      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    };
-
-    const nearby = data
-      .map((c) => ({
-        ...c,
-        distance_km: parseFloat(
-          haversine(latNum, lngNum, c.latitude, c.longitude).toFixed(2)
-        ),
-      }))
+    const nearby = result.rows
+      .map((c) => ({ ...c, distance_km: parseFloat(haversine(latNum, lngNum, c.latitude, c.longitude).toFixed(2)) }))
       .filter((c) => c.distance_km <= radiusNum)
       .sort((a, b) => a.distance_km - b.distance_km);
 
-    res.json({ data: nearby, meta: { count: nearby.length, radius_km: radiusNum } });
-  } catch (err) {
-    next(err);
+    res.json({ success: true, count: nearby.length, radius_km: radiusNum, data: nearby });
+  } catch (error) {
+    console.error('Get Nearby Consumers Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch nearby consumers.' });
   }
 };
 
-module.exports = {
-  getAllCustomers,
-  getCustomerById,
-  createCustomer,
-  replaceCustomer,
-  updateCustomer,
-  deleteCustomer,
-  getNearbyCustomers,
+// GET /api/consumers/:id
+exports.getConsumerById = async (req, res) => {
+  try {
+    const result = await db.query('SELECT * FROM public.customers WHERE id = $1', [req.params.id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Consumer not found.' });
+    }
+    res.json({ success: true, data: result.rows[0] });
+  } catch (error) {
+    console.error('Get Consumer By ID Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch consumer.' });
+  }
+};
+
+// PUT /api/consumers/:id
+exports.updateConsumer = async (req, res) => {
+  const { id } = req.params;
+  const allowedFields = ['name', 'email', 'phone', 'latitude', 'longitude'];
+  const updates = [], values = [];
+  let i = 1;
+
+  for (const field of allowedFields) {
+    if (req.body[field] !== undefined) {
+      updates.push(`${field} = $${i++}`);
+      values.push(req.body[field]);
+    }
+  }
+
+  if (updates.length === 0) {
+    return res.status(400).json({ success: false, error: 'No valid fields provided for update.' });
+  }
+
+  values.push(id);
+  try {
+    const result = await db.query(
+      `UPDATE public.customers SET ${updates.join(', ')} WHERE id = $${i} RETURNING *`,
+      values
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Consumer not found.' });
+    }
+    res.json({ success: true, data: result.rows[0] });
+  } catch (error) {
+    console.error('Update Consumer Error:', error);
+    if (error.code === '23505') {
+      return res.status(409).json({ success: false, error: 'Email already exists.' });
+    }
+    res.status(500).json({ success: false, error: 'Server error updating consumer.' });
+  }
+};
+
+// DELETE /api/consumers/:id
+exports.deleteConsumer = async (req, res) => {
+  try {
+    const result = await db.query(
+      'DELETE FROM public.customers WHERE id = $1 RETURNING *',
+      [req.params.id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Consumer not found.' });
+    }
+    res.json({ success: true, message: 'Consumer deleted successfully.' });
+  } catch (error) {
+    console.error('Delete Consumer Error:', error);
+    res.status(500).json({ success: false, error: 'Server error deleting consumer.' });
+  }
 };

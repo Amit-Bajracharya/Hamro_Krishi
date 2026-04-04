@@ -2,9 +2,9 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const db = require('./db');
-const middlemenRoutes = require('./routes/middlemenRoutes');
-const productRoutes = require('./routes/productRoutes');
-const reviewRoutes = require('./routes/reviewRoutes');
+const middlemenRoutes = require('./routes/traders');
+const productRoutes = require('./routes/product');
+const reviewRoutes = require('./routes/review');
 
 
 const app = express();
@@ -18,6 +18,8 @@ app.use(express.json());
 app.use('/api/middlemen', middlemenRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/reviews', reviewRoutes);
+
+
 
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to Hamro Krishi API' });

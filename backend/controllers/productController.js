@@ -1,141 +1,149 @@
 const db = require('../db');
 
-// Create a new product
+// POST /api/products
 exports.createProduct = async (req, res) => {
   const { name, category, harvest_date, expiry_date, price, quantity, farmer_id, latitude, longitude } = req.body;
 
+  if (!name || !category || !expiry_date || !price || !quantity || !latitude || !longitude) {
+    return res.status(400).json({ success: false, error: 'name, category, expiry_date, price, quantity, latitude, longitude are required' });
+  }
+
+  if (!['vegetable', 'fruit', 'grain'].includes(category)) {
+    return res.status(400).json({ success: false, error: 'category must be vegetable, fruit, or grain' });
+  }
+
   try {
     const result = await db.query(
-      `INSERT INTO public.product 
-        (name, category, harvest_date, expiry_date, price, quantity, farmer_id, latitude, longitude) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
-       RETURNING *`,
-      [
-        name || null, 
-        category || null, 
-        harvest_date || null, 
-        expiry_date || null, 
-        price || null, 
-        quantity || null, 
-        farmer_id || null, 
-        latitude || null, 
-        longitude || null
-      ]
+      `INSERT INTO public.product (name, category, harvest_date, expiry_date, price, quantity, farmer_id, latitude, longitude)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+      [name, category, harvest_date || null, expiry_date, price, quantity, farmer_id || null, latitude, longitude]
     );
-
-    res.status(201).json({
-      success: true,
-      message: 'Product created successfully',
-      product: result.rows[0]
-    });
+    res.status(201).json({ success: true, data: result.rows[0] });
   } catch (error) {
     console.error('Create Product Error:', error);
-    res.status(500).json({ success: false, error: 'Failed to create product' });
+    if (error.code === '23503') {
+      return res.status(404).json({ success: false, error: 'Referenced farmer does not exist.' });
+    }
+    if (error.code === '23514') {
+      return res.status(400).json({ success: false, error: 'expiry_date must be greater than or equal to harvest_date.' });
+    }
+    res.status(500).json({ success: false, error: 'Server error creating product.' });
   }
 };
 
-// Get all products
+// GET /api/products
 exports.getAllProducts = async (req, res) => {
+  const { category } = req.query;
+
   try {
-    const result = await db.query('SELECT * FROM public.product ORDER BY created_at DESC');
-    res.status(200).json({
-      success: true,
-      count: result.rowCount,
-      products: result.rows
-    });
+    let query = `SELECT p.*, f.name AS farmer_name
+                 FROM public.product p
+                 LEFT JOIN public.farmers f ON p.farmer_id = f.id`;
+    const values = [];
+
+    if (category) {
+      query += ' WHERE p.category = $1';
+      values.push(category);
+    }
+
+    query += ' ORDER BY p.created_at DESC';
+
+    const result = await db.query(query, values);
+    res.json({ success: true, count: result.rowCount, data: result.rows });
   } catch (error) {
     console.error('Get All Products Error:', error);
-    res.status(500).json({ success: false, error: 'Failed to fetch products' });
+    res.status(500).json({ success: false, error: 'Failed to fetch products.' });
   }
 };
 
-// Get single product by ID
+// GET /api/products/:id
 exports.getProductById = async (req, res) => {
-  const { id } = req.params;
-
   try {
-    const result = await db.query('SELECT * FROM public.product WHERE id = $1', [id]);
-
+    const result = await db.query(
+      `SELECT p.*, f.name AS farmer_name
+       FROM public.product p
+       LEFT JOIN public.farmers f ON p.farmer_id = f.id
+       WHERE p.id = $1`,
+      [req.params.id]
+    );
     if (result.rows.length === 0) {
-      return res.status(404).json({ success: false, error: 'Product not found' });
+      return res.status(404).json({ success: false, error: 'Product not found.' });
     }
-
-    res.status(200).json({
-      success: true,
-      product: result.rows[0]
-    });
+    res.json({ success: true, data: result.rows[0] });
   } catch (error) {
     console.error('Get Product By ID Error:', error);
-    res.status(500).json({ success: false, error: 'Failed to fetch product' });
+    res.status(500).json({ success: false, error: 'Failed to fetch product.' });
   }
 };
 
-// Update a product by ID
+// GET /api/products/farmer/:farmer_id
+exports.getProductsByFarmer = async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT * FROM public.product WHERE farmer_id = $1 ORDER BY created_at DESC`,
+      [req.params.farmer_id]
+    );
+    res.json({ success: true, count: result.rowCount, data: result.rows });
+  } catch (error) {
+    console.error('Get Products By Farmer Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch products.' });
+  }
+};
+
+// PUT /api/products/:id
 exports.updateProduct = async (req, res) => {
   const { id } = req.params;
-  const { name, category, harvest_date, expiry_date, price, quantity, latitude, longitude } = req.body;
+  const allowedFields = ['name', 'category', 'harvest_date', 'expiry_date', 'price', 'quantity', 'latitude', 'longitude'];
+  const updates = [], values = [];
+  let i = 1;
 
-  try {
-    // Check if product exists
-    const checkProduct = await db.query('SELECT * FROM public.product WHERE id = $1', [id]);
-    if (checkProduct.rows.length === 0) {
-      return res.status(404).json({ success: false, error: 'Product not found' });
+  for (const field of allowedFields) {
+    if (req.body[field] !== undefined) {
+      updates.push(`${field} = $${i++}`);
+      values.push(req.body[field]);
     }
+  }
 
+  if (updates.length === 0) {
+    return res.status(400).json({ success: false, error: 'No valid fields provided for update.' });
+  }
+
+  if (req.body.category && !['vegetable', 'fruit', 'grain'].includes(req.body.category)) {
+    return res.status(400).json({ success: false, error: 'category must be vegetable, fruit, or grain' });
+  }
+
+  values.push(id);
+  try {
     const result = await db.query(
-      `UPDATE public.product 
-       SET 
-         name = COALESCE($1, name),
-         category = COALESCE($2, category),
-         harvest_date = COALESCE($3, harvest_date),
-         expiry_date = COALESCE($4, expiry_date),
-         price = COALESCE($5, price),
-         quantity = COALESCE($6, quantity),
-         latitude = COALESCE($7, latitude),
-         longitude = COALESCE($8, longitude)
-       WHERE id = $9 
-       RETURNING *`,
-      [
-        name || null, 
-        category || null, 
-        harvest_date || null, 
-        expiry_date || null, 
-        price || null, 
-        quantity || null, 
-        latitude || null, 
-        longitude || null, 
-        id
-      ]
+      `UPDATE public.product SET ${updates.join(', ')} WHERE id = $${i} RETURNING *`,
+      values
     );
-
-    res.status(200).json({
-      success: true,
-      message: 'Product updated successfully',
-      product: result.rows[0]
-    });
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Product not found.' });
+    }
+    res.json({ success: true, data: result.rows[0] });
   } catch (error) {
     console.error('Update Product Error:', error);
-    res.status(500).json({ success: false, error: 'Failed to update product' });
+    if (error.code === '23514') {
+      return res.status(400).json({ success: false, error: 'expiry_date must be greater than or equal to harvest_date.' });
+    }
+    res.status(500).json({ success: false, error: 'Server error updating product.' });
   }
 };
 
-// Delete a product by ID
+// DELETE /api/products/:id
 exports.deleteProduct = async (req, res) => {
-  const { id } = req.params;
-
   try {
-    const result = await db.query('DELETE FROM public.product WHERE id = $1 RETURNING *', [id]);
-
+    const result = await db.query(
+      'DELETE FROM public.product WHERE id = $1 RETURNING *',
+      [req.params.id]
+    );
     if (result.rows.length === 0) {
-      return res.status(404).json({ success: false, error: 'Product not found' });
+      return res.status(404).json({ success: false, error: 'Product not found.' });
     }
-
-    res.status(200).json({
-      success: true,
-      message: 'Product deleted successfully'
-    });
+    res.json({ success: true, message: 'Product deleted successfully.' });
   } catch (error) {
     console.error('Delete Product Error:', error);
-    res.status(500).json({ success: false, error: 'Failed to delete product' });
+    res.status(500).json({ success: false, error: 'Server error deleting product.' });
   }
 };
