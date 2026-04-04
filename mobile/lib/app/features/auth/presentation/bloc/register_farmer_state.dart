@@ -9,6 +9,7 @@ abstract class RegisterFarmerState with _$RegisterFarmerState {
     double? latitude,
     double? longitude,
     @Default(false) bool isLocationLoading,
+    String? locationError,
   }) = Initial;
 
   const factory RegisterFarmerState.loading({
@@ -16,6 +17,7 @@ abstract class RegisterFarmerState with _$RegisterFarmerState {
     double? latitude,
     double? longitude,
     @Default(false) bool isLocationLoading,
+    String? locationError,
   }) = Loading;
 
   const factory RegisterFarmerState.success({
@@ -23,6 +25,7 @@ abstract class RegisterFarmerState with _$RegisterFarmerState {
     double? latitude,
     double? longitude,
     @Default(false) bool isLocationLoading,
+    String? locationError,
   }) = Success;
 
   const factory RegisterFarmerState.failure({
@@ -31,5 +34,6 @@ abstract class RegisterFarmerState with _$RegisterFarmerState {
     double? latitude,
     double? longitude,
     @Default(false) bool isLocationLoading,
+    String? locationError,
   }) = Failure;
 }

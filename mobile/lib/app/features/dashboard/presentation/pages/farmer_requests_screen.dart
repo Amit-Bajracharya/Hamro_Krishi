@@ -1,29 +1,114 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:hamrokrishi_app/app/core/di/injection_container.dart';
+import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/login_bloc.dart';
+import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/login_state.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/contract_bloc.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/contract_event.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/contract_state.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/domain/entities/contract_entity.dart';
+import 'package:intl/intl.dart';
 
 class FarmerRequestsScreen extends StatelessWidget {
   const FarmerRequestsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF9FAF7),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: 24.h),
-              _buildHeader(),
-              SizedBox(height: 32.h),
-              _buildStatsCards(),
-              SizedBox(height: 32.h),
-              _buildNewRequestsSection(),
-              SizedBox(height: 32.h),
-              _buildActiveOrdersSection(),
-              SizedBox(height: 100.h), // Space for bottom navigation
-            ],
+    final loginState = context.read<LoginBloc>().state;
+    final user = loginState.maybeWhen(
+      success: (user, _) => user,
+      orElse: () => null,
+    );
+
+    return BlocProvider(
+      create: (context) {
+        final bloc = sl<ContractBloc>();
+        if (user != null) {
+          bloc.add(ContractEvent.fetchUserContracts(
+            userId: user.id,
+            role: 'farmer',
+          ));
+        }
+        return bloc;
+      },
+      child: BlocListener<ContractBloc, ContractState>(
+        listener: (context, state) {
+          state.whenOrNull(
+            failure: (message) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(message), backgroundColor: Colors.red),
+              );
+            },
+            success: (_) {
+               // Re-fetch after update
+              if (user != null) {
+                context.read<ContractBloc>().add(ContractEvent.fetchUserContracts(
+                  userId: user.id,
+                  role: 'farmer',
+                ));
+              }
+            },
+          );
+        },
+        child: Scaffold(
+          backgroundColor: const Color(0xFFF9FAF7),
+          body: SafeArea(
+            child: BlocBuilder<ContractBloc, ContractState>(
+              builder: (context, state) {
+                return state.maybeWhen(
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  contractsLoaded: (contracts) => RefreshIndicator(
+                    onRefresh: () async {
+                      if (user != null) {
+                        context.read<ContractBloc>().add(ContractEvent.fetchUserContracts(
+                          userId: user.id,
+                          role: 'farmer',
+                        ));
+                      }
+                    },
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: EdgeInsets.symmetric(horizontal: 20.w),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(height: 24.h),
+                          _buildHeader(),
+                          SizedBox(height: 32.h),
+                          _buildStatsCards(contracts),
+                          SizedBox(height: 32.h),
+                          _buildNewRequestsSection(context, contracts),
+                          SizedBox(height: 32.h),
+                          _buildActiveOrdersSection(contracts),
+                          SizedBox(height: 100.h),
+                        ],
+                      ),
+                    ),
+                  ),
+                  failure: (message) => Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('Error: $message'),
+                        ElevatedButton(
+                          onPressed: () {
+                            if (user != null) {
+                              context.read<ContractBloc>().add(ContractEvent.fetchUserContracts(
+                                userId: user.id,
+                                role: 'farmer',
+                              ));
+                            }
+                          },
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  ),
+                  orElse: () => const Center(child: CircularProgressIndicator()),
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -65,14 +150,19 @@ class FarmerRequestsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsCards() {
+  Widget _buildStatsCards(List<ContractEntity> contracts) {
+    final pendingCount = contracts.where((c) => c.status == 'pending').length;
+    final activeCount = contracts.where((c) => c.status == 'active').length;
+    // For demo, let's say completed are any other status or we just use a placeholder
+    final completedCount = contracts.where((c) => c.status == 'completed').length;
+
     return Row(
       children: [
         Expanded(
           child: _buildStatCard(
             'New Requests',
-            '12',
-            'This week',
+            pendingCount.toString(),
+            'Pending',
             const Color(0xFFFF6B6B),
             Icons.notifications_active,
           ),
@@ -81,7 +171,7 @@ class FarmerRequestsScreen extends StatelessWidget {
         Expanded(
           child: _buildStatCard(
             'Active Orders',
-            '8',
+            activeCount.toString(),
             'In progress',
             const Color(0xFF4CAF50),
             Icons.shopping_cart,
@@ -91,8 +181,8 @@ class FarmerRequestsScreen extends StatelessWidget {
         Expanded(
           child: _buildStatCard(
             'Completed',
-            '45',
-            'This month',
+            completedCount.toString(),
+            'Historical',
             const Color(0xFF2196F3),
             Icons.check_circle,
           ),
@@ -149,7 +239,9 @@ class FarmerRequestsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildNewRequestsSection() {
+  Widget _buildNewRequestsSection(BuildContext context, List<ContractEntity> contracts) {
+    final pendingContracts = contracts.where((c) => c.status == 'pending').toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -162,40 +254,34 @@ class FarmerRequestsScreen extends StatelessWidget {
           ),
         ),
         SizedBox(height: 16.h),
-        _buildRequestCard(
-          'Metro Traders Ltd.',
-          '500kg Tomatoes',
-          '\$3.50/kg',
-          '2 hours ago',
-          const Color(0xFFFF6B6B),
-        ),
-        SizedBox(height: 12.h),
-        _buildRequestCard(
-          'Green Valley Co.',
-          '200kg Lettuce',
-          '\$4.80/kg',
-          '5 hours ago',
-          const Color(0xFF4ECDC4),
-        ),
-        SizedBox(height: 12.h),
-        _buildRequestCard(
-          'City Markets',
-          '1,000kg Wheat',
-          '\$3.20/kg',
-          '1 day ago',
-          const Color(0xFFFFD93D),
-        ),
+        if (pendingContracts.isEmpty)
+          Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 20.h),
+              child: Text('No new requests', style: TextStyle(color: Colors.grey[500])),
+            ),
+          )
+        else
+          ...pendingContracts.map((contract) => Padding(
+            padding: EdgeInsets.only(bottom: 12.h),
+            child: _buildRequestCard(
+              context,
+              contract,
+            ),
+          )),
       ],
     );
   }
 
   Widget _buildRequestCard(
-    String buyer,
-    String product,
-    String price,
-    String time,
-    Color color,
+    BuildContext context,
+    ContractEntity contract,
   ) {
+    const color = Color(0xFFFF6B6B);
+    final timeAgo = contract.createdAt != null 
+        ? '${DateTime.now().difference(contract.createdAt!).inHours}h ago'
+        : 'Recently';
+
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -213,7 +299,7 @@ class FarmerRequestsScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      buyer,
+                      contract.traderName ?? 'Unknown Trader',
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
@@ -222,7 +308,7 @@ class FarmerRequestsScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      product,
+                      '${contract.quantity}kg ${contract.productName ?? 'Product'}',
                       style: TextStyle(
                         fontSize: 14.sp,
                         color: Colors.grey[600],
@@ -253,7 +339,7 @@ class FarmerRequestsScreen extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  price,
+                  'Rs. ${contract.traderSellingPrice.toStringAsFixed(2)}/kg',
                   style: TextStyle(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.bold,
@@ -262,7 +348,7 @@ class FarmerRequestsScreen extends StatelessWidget {
                 ),
               ),
               Text(
-                time,
+                timeAgo,
                 style: TextStyle(
                   fontSize: 10.sp,
                   color: Colors.grey[500],
@@ -275,7 +361,21 @@ class FarmerRequestsScreen extends StatelessWidget {
             children: [
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    _showConfirmationDialog(
+                      context,
+                      title: 'Accept Contract?',
+                      message: 'Are you sure you want to accept this contract from ${contract.traderName}? This will decrement your product inventory.',
+                      confirmText: 'Accept',
+                      confirmColor: const Color(0xFF2D5A27),
+                      onConfirm: () {
+                        context.read<ContractBloc>().add(ContractEvent.updateContractStatus(
+                          id: contract.id!,
+                          status: 'active',
+                        ));
+                      },
+                    );
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF2D5A27),
                     foregroundColor: Colors.white,
@@ -293,7 +393,21 @@ class FarmerRequestsScreen extends StatelessWidget {
               SizedBox(width: 12.w),
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    _showConfirmationDialog(
+                      context,
+                      title: 'Decline Contract?',
+                      message: 'Are you sure you want to decline this contract request? This action cannot be undone.',
+                      confirmText: 'Decline',
+                      confirmColor: Colors.red,
+                      onConfirm: () {
+                        context.read<ContractBloc>().add(ContractEvent.updateContractStatus(
+                          id: contract.id!,
+                          status: 'declined',
+                        ));
+                      },
+                    );
+                  },
                   style: OutlinedButton.styleFrom(
                     foregroundColor: const Color(0xFF2D5A27),
                     side: const BorderSide(color: Color(0xFF2D5A27)),
@@ -303,7 +417,7 @@ class FarmerRequestsScreen extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    'Negotiate',
+                    'Decline',
                     style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600),
                   ),
                 ),
@@ -315,7 +429,9 @@ class FarmerRequestsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActiveOrdersSection() {
+  Widget _buildActiveOrdersSection(List<ContractEntity> contracts) {
+    final activeContracts = contracts.where((c) => c.status == 'active').toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -328,21 +444,24 @@ class FarmerRequestsScreen extends StatelessWidget {
           ),
         ),
         SizedBox(height: 16.h),
-        _buildOrderCard(
-          'Fresh Tomatoes',
-          'Metro Traders Ltd.',
-          '300kg / 500kg',
-          'Delivery tomorrow',
-          const Color(0xFF4CAF50),
-        ),
-        SizedBox(height: 12.h),
-        _buildOrderCard(
-          'Organic Lettuce',
-          'Green Valley Co.',
-          '150kg / 200kg',
-          'In 3 days',
-          const Color(0xFF2196F3),
-        ),
+        if (activeContracts.isEmpty)
+          Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 20.h),
+              child: Text('No active orders', style: TextStyle(color: Colors.grey[500])),
+            ),
+          )
+        else
+          ...activeContracts.map((contract) => Padding(
+            padding: EdgeInsets.only(bottom: 12.h),
+            child: _buildOrderCard(
+              contract.productName ?? 'Product',
+              contract.traderName ?? 'Unknown Trader',
+              '${contract.quantity}kg',
+              'Target: Rs. ${contract.traderSellingPrice}',
+              const Color(0xFF4CAF50),
+            ),
+          )),
       ],
     );
   }
@@ -457,6 +576,66 @@ class FarmerRequestsScreen extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showConfirmationDialog(
+    BuildContext context, {
+    required String title,
+    required String message,
+    required String confirmText,
+    required Color confirmColor,
+    required VoidCallback onConfirm,
+  }) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+        title: Text(
+          title,
+          style: TextStyle(
+            fontSize: 20.sp,
+            fontWeight: FontWeight.w900,
+            color: const Color(0xFF1B3A1A),
+          ),
+        ),
+        content: Text(
+          message,
+          style: TextStyle(
+            fontSize: 14.sp,
+            color: Colors.grey[600],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(
+              'Cancel',
+              style: TextStyle(
+                color: Colors.grey[500],
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              onConfirm();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: confirmColor,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+            ),
+            child: Text(
+              confirmText,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),

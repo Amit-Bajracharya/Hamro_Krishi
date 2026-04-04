@@ -49,6 +49,7 @@ class TraderNavigationBar extends StatelessWidget {
   final List<NavigationItem> _navigationItems = [
     NavigationItem(Icons.grid_view_rounded, 'DASHBOARD'),
     NavigationItem(Icons.storefront_rounded, 'MARKET'),
+    NavigationItem(Icons.eco_rounded, 'CROPS'),
     NavigationItem(Icons.description_rounded, 'CONTRACTS'),
     NavigationItem(Icons.person_rounded, 'ACCOUNT'),
   ];

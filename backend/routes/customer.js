@@ -7,8 +7,10 @@ const {
   getConsumerById,
   updateConsumer,
   deleteConsumer,
+  getConsumerMarketplace,
 } = require('../controllers/customerController');
 
+router.get('/marketplace', getConsumerMarketplace); // Price Transparency Feed
 router.get('/nearby', getNearbyConsumers); // must be before /:id
 router.get('/',       getAllConsumers);
 router.post('/',      createConsumer);

@@ -1,14 +1,49 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/login_bloc.dart';
 import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/login_state.dart';
 import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/trader_dashboard_bloc.dart';
 import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/trader_dashboard_state.dart';
 import 'package:hamrokrishi_app/app/features/product/domain/entities/product_entity.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/weather_bloc.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/weather_event.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/prediction_bloc.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/prediction_event.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/widgets/weather_section.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/widgets/prediction_section.dart';
+import 'package:hamrokrishi_app/app/routes/route_constants.dart';
 
-class TraderDashboard extends StatelessWidget {
+class TraderDashboard extends StatefulWidget {
   const TraderDashboard({super.key});
+
+  @override
+  State<TraderDashboard> createState() => _TraderDashboardState();
+}
+
+class _TraderDashboardState extends State<TraderDashboard> {
+  @override
+  void initState() {
+    super.initState();
+    _fetchData();
+  }
+
+  void _fetchData() {
+    if (mounted) {
+      // Kathmandu, Nepal coordinates
+      const double ktmLat = 27.7172, ktmLon = 85.3240;
+      
+      context.read<WeatherBloc>().add(const WeatherEvent.fetchWeather(
+            latitude: ktmLat,
+            longitude: ktmLon,
+          ));
+      
+      context.read<PredictionBloc>().add(const PredictionEvent.fetchPrediction(
+            productName: '', 
+          ));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,21 +56,31 @@ class TraderDashboard extends StatelessWidget {
               initial: () => const Center(child: CircularProgressIndicator()),
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (message) => Center(child: Text('Error: $message')),
-              loaded: (farmerCount, products) => SingleChildScrollView(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: 24.h),
-                    _buildHeader(context),
-                    SizedBox(height: 32.h),
-                    _buildStatsCards(farmerCount),
-                    SizedBox(height: 32.h),
-                    _buildContractsSection(),
-                    SizedBox(height: 32.h),
-                    _buildOpportunitiesSection(products),
-                    SizedBox(height: 100.h), // Space for bottom navigation
-                  ],
+              loaded: (farmerCount, products) => RefreshIndicator(
+                onRefresh: () async => _fetchData(),
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 24.h),
+                      _buildHeader(context),
+                      SizedBox(height: 24.h),
+                      _buildQuickAction(context),
+                      SizedBox(height: 32.h),
+                      WeatherSection(onRefresh: _fetchData),
+                      SizedBox(height: 32.h),
+                      PredictionSection(onRefresh: _fetchData),
+                      SizedBox(height: 32.h),
+                      _buildStatsCards(farmerCount),
+                      SizedBox(height: 32.h),
+                      _buildContractsSection(),
+                      SizedBox(height: 32.h),
+                      _buildOpportunitiesSection(products),
+                      SizedBox(height: 100.h), // Space for bottom navigation
+                    ],
+                  ),
                 ),
               ),
             );
@@ -389,6 +434,61 @@ class TraderDashboard extends StatelessWidget {
             ),
           ),
           Icon(Icons.arrow_forward_ios, color: color, size: 16.sp),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickAction(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2D5A27),
+        borderRadius: BorderRadius.circular(24.r),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF2D5A27).withOpacity(0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Reach More Customers',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  'List crops from your active contracts for sale now.',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.8),
+                    fontSize: 11.sp,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => context.push(AppRoutes.traderProducts),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: const Color(0xFF2D5A27),
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+            ),
+            child: Text('SELL NOW', style: TextStyle(fontSize: 10.sp, fontWeight: FontWeight.bold)),
+          ),
         ],
       ),
     );

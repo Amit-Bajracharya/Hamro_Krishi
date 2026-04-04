@@ -9,10 +9,11 @@ class ApiConstants {
   static const String login = '/auth/login';
   static const String farmers = '/farmers';
   static const String traders = '/traders';
-  static const String consumers = '/consumers';
+  static const String consumers = '/customers';
   static const String products = '/products';
   static const String weather = '/weather';
   static const String prediction = '/predictions';
   static const String contracts = '/contracts';
+  static const String traderProducts = '/trader-products';
 }
 

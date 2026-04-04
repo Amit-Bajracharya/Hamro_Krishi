@@ -1,21 +1,23 @@
 const db = require('../db');
 const { randomUUID } = require('crypto');
+const bcrypt = require('bcrypt');
 
 exports.createFarmer = async (req, res) => {
-  const { name, email, phone, latitude, longitude } = req.body;
+  const { name, email, password, phone, latitude, longitude } = req.body;
 
-  if (!name || !email || !phone || latitude === undefined || longitude === undefined) {
-    return res.status(400).json({ success: false, error: 'name, email, phone, latitude, longitude are required' });
+  if (!name || !email || !password || !phone || latitude === undefined || longitude === undefined) {
+    return res.status(400).json({ success: false, error: 'name, email, password, phone, latitude, longitude are required' });
   }
 
   try {
     const id = randomUUID();
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     await db.query(
-      `INSERT INTO auth.users (id, email, created_at, updated_at, role, aud)
-       VALUES ($1, $2, now(), now(), 'authenticated', 'authenticated')
+      `INSERT INTO auth.users (id, email, encrypted_password, created_at, updated_at, role, aud)
+       VALUES ($1, $2, $3, now(), now(), 'authenticated', 'authenticated')
        ON CONFLICT (id) DO NOTHING`,
-      [id, email]
+      [id, email, hashedPassword]
     );
 
     const result = await db.query(

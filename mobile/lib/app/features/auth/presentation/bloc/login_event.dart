@@ -10,4 +10,6 @@ class LoginEvent with _$LoginEvent {
   }) = LoginSubmitted;
   
   const factory LoginEvent.togglePasswordVisibility() = TogglePasswordVisibility;
+  
+  const factory LoginEvent.logoutRequested() = LogoutRequested;
 }

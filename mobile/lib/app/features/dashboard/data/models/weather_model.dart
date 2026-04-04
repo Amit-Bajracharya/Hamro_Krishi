@@ -18,9 +18,9 @@ class WeatherModel extends Weather {
     return WeatherModel(
       temperature: (json['main']['temp'] as num).toDouble() - 273.15, // Kelvin to Celsius
       condition: json['weather'][0]['description'] as String,
-      humidity: json['main']['humidity'] as int,
+      humidity: (json['main']['humidity'] as num).toInt(),
       windSpeed: (json['wind']['speed'] as num).toDouble() * 3.6, // m/s to km/h
-      rainProbability: json['clouds']['all'] as int, 
+      rainProbability: (json['clouds']['all'] as num).toInt(), 
       icon: json['weather'][0]['icon'] as String,
     );
   }

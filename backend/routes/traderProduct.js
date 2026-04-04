@@ -1,13 +1,16 @@
 const express = require('express');
 const router = express.Router();
-const traderProductController = require('../controllers/traderProductController');
+const {
+  createTraderProduct,
+  getTraderProducts,
+  getTraderProductById,
+  updateTraderProductStatus,
+} = require('../controllers/traderProductController');
 
-// Routes handling trader products
-router.post('/', traderProductController.createTraderProduct);
-router.get('/', traderProductController.getAllTraderProducts);
-router.get('/:id', traderProductController.getTraderProductById);
-router.get('/trader/:traderId', traderProductController.getTraderProductsByTrader);
-router.put('/:id', traderProductController.updateTraderProduct);
-router.delete('/:id', traderProductController.deleteTraderProduct);
+// All handlers must be functions
+router.post('/', createTraderProduct);
+router.get('/trader/:trader_id', getTraderProducts);
+router.get('/:id', getTraderProductById);
+router.put('/:id/status', updateTraderProductStatus);
 
 module.exports = router;

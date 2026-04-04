@@ -55,13 +55,15 @@ extension ContractStatePatterns on ContractState {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( ContractInitial value)?  initial,TResult Function( ContractSubmitting value)?  submitting,TResult Function( ContractSuccess value)?  success,TResult Function( ContractFailure value)?  failure,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( ContractInitial value)?  initial,TResult Function( ContractLoading value)?  loading,TResult Function( ContractSubmitting value)?  submitting,TResult Function( ContractSuccess value)?  success,TResult Function( ContractsLoaded value)?  contractsLoaded,TResult Function( ContractFailure value)?  failure,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case ContractInitial() when initial != null:
-return initial(_that);case ContractSubmitting() when submitting != null:
+return initial(_that);case ContractLoading() when loading != null:
+return loading(_that);case ContractSubmitting() when submitting != null:
 return submitting(_that);case ContractSuccess() when success != null:
-return success(_that);case ContractFailure() when failure != null:
+return success(_that);case ContractsLoaded() when contractsLoaded != null:
+return contractsLoaded(_that);case ContractFailure() when failure != null:
 return failure(_that);case _:
   return orElse();
 
@@ -80,13 +82,15 @@ return failure(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( ContractInitial value)  initial,required TResult Function( ContractSubmitting value)  submitting,required TResult Function( ContractSuccess value)  success,required TResult Function( ContractFailure value)  failure,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( ContractInitial value)  initial,required TResult Function( ContractLoading value)  loading,required TResult Function( ContractSubmitting value)  submitting,required TResult Function( ContractSuccess value)  success,required TResult Function( ContractsLoaded value)  contractsLoaded,required TResult Function( ContractFailure value)  failure,}){
 final _that = this;
 switch (_that) {
 case ContractInitial():
-return initial(_that);case ContractSubmitting():
+return initial(_that);case ContractLoading():
+return loading(_that);case ContractSubmitting():
 return submitting(_that);case ContractSuccess():
-return success(_that);case ContractFailure():
+return success(_that);case ContractsLoaded():
+return contractsLoaded(_that);case ContractFailure():
 return failure(_that);case _:
   throw StateError('Unexpected subclass');
 
@@ -104,13 +108,15 @@ return failure(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( ContractInitial value)?  initial,TResult? Function( ContractSubmitting value)?  submitting,TResult? Function( ContractSuccess value)?  success,TResult? Function( ContractFailure value)?  failure,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( ContractInitial value)?  initial,TResult? Function( ContractLoading value)?  loading,TResult? Function( ContractSubmitting value)?  submitting,TResult? Function( ContractSuccess value)?  success,TResult? Function( ContractsLoaded value)?  contractsLoaded,TResult? Function( ContractFailure value)?  failure,}){
 final _that = this;
 switch (_that) {
 case ContractInitial() when initial != null:
-return initial(_that);case ContractSubmitting() when submitting != null:
+return initial(_that);case ContractLoading() when loading != null:
+return loading(_that);case ContractSubmitting() when submitting != null:
 return submitting(_that);case ContractSuccess() when success != null:
-return success(_that);case ContractFailure() when failure != null:
+return success(_that);case ContractsLoaded() when contractsLoaded != null:
+return contractsLoaded(_that);case ContractFailure() when failure != null:
 return failure(_that);case _:
   return null;
 
@@ -128,12 +134,14 @@ return failure(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  submitting,TResult Function( ContractEntity contract)?  success,TResult Function( String message)?  failure,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function()?  submitting,TResult Function( ContractEntity contract)?  success,TResult Function( List<ContractEntity> contracts)?  contractsLoaded,TResult Function( String message)?  failure,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case ContractInitial() when initial != null:
-return initial();case ContractSubmitting() when submitting != null:
+return initial();case ContractLoading() when loading != null:
+return loading();case ContractSubmitting() when submitting != null:
 return submitting();case ContractSuccess() when success != null:
-return success(_that.contract);case ContractFailure() when failure != null:
+return success(_that.contract);case ContractsLoaded() when contractsLoaded != null:
+return contractsLoaded(_that.contracts);case ContractFailure() when failure != null:
 return failure(_that.message);case _:
   return orElse();
 
@@ -152,12 +160,14 @@ return failure(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  submitting,required TResult Function( ContractEntity contract)  success,required TResult Function( String message)  failure,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function()  submitting,required TResult Function( ContractEntity contract)  success,required TResult Function( List<ContractEntity> contracts)  contractsLoaded,required TResult Function( String message)  failure,}) {final _that = this;
 switch (_that) {
 case ContractInitial():
-return initial();case ContractSubmitting():
+return initial();case ContractLoading():
+return loading();case ContractSubmitting():
 return submitting();case ContractSuccess():
-return success(_that.contract);case ContractFailure():
+return success(_that.contract);case ContractsLoaded():
+return contractsLoaded(_that.contracts);case ContractFailure():
 return failure(_that.message);case _:
   throw StateError('Unexpected subclass');
 
@@ -175,12 +185,14 @@ return failure(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  submitting,TResult? Function( ContractEntity contract)?  success,TResult? Function( String message)?  failure,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function()?  submitting,TResult? Function( ContractEntity contract)?  success,TResult? Function( List<ContractEntity> contracts)?  contractsLoaded,TResult? Function( String message)?  failure,}) {final _that = this;
 switch (_that) {
 case ContractInitial() when initial != null:
-return initial();case ContractSubmitting() when submitting != null:
+return initial();case ContractLoading() when loading != null:
+return loading();case ContractSubmitting() when submitting != null:
 return submitting();case ContractSuccess() when success != null:
-return success(_that.contract);case ContractFailure() when failure != null:
+return success(_that.contract);case ContractsLoaded() when contractsLoaded != null:
+return contractsLoaded(_that.contracts);case ContractFailure() when failure != null:
 return failure(_that.message);case _:
   return null;
 
@@ -213,6 +225,38 @@ int get hashCode => runtimeType.hashCode;
 @override
 String toString() {
   return 'ContractState.initial()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class ContractLoading implements ContractState {
+  const ContractLoading();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ContractLoading);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'ContractState.loading()';
 }
 
 
@@ -326,6 +370,78 @@ $ContractEntityCopyWith<$Res> get contract {
     return _then(_self.copyWith(contract: value));
   });
 }
+}
+
+/// @nodoc
+
+
+class ContractsLoaded implements ContractState {
+  const ContractsLoaded(final  List<ContractEntity> contracts): _contracts = contracts;
+  
+
+ final  List<ContractEntity> _contracts;
+ List<ContractEntity> get contracts {
+  if (_contracts is EqualUnmodifiableListView) return _contracts;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_contracts);
+}
+
+
+/// Create a copy of ContractState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$ContractsLoadedCopyWith<ContractsLoaded> get copyWith => _$ContractsLoadedCopyWithImpl<ContractsLoaded>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ContractsLoaded&&const DeepCollectionEquality().equals(other._contracts, _contracts));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_contracts));
+
+@override
+String toString() {
+  return 'ContractState.contractsLoaded(contracts: $contracts)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $ContractsLoadedCopyWith<$Res> implements $ContractStateCopyWith<$Res> {
+  factory $ContractsLoadedCopyWith(ContractsLoaded value, $Res Function(ContractsLoaded) _then) = _$ContractsLoadedCopyWithImpl;
+@useResult
+$Res call({
+ List<ContractEntity> contracts
+});
+
+
+
+
+}
+/// @nodoc
+class _$ContractsLoadedCopyWithImpl<$Res>
+    implements $ContractsLoadedCopyWith<$Res> {
+  _$ContractsLoadedCopyWithImpl(this._self, this._then);
+
+  final ContractsLoaded _self;
+  final $Res Function(ContractsLoaded) _then;
+
+/// Create a copy of ContractState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? contracts = null,}) {
+  return _then(ContractsLoaded(
+null == contracts ? _self._contracts : contracts // ignore: cast_nullable_to_non_nullable
+as List<ContractEntity>,
+  ));
+}
+
+
 }
 
 /// @nodoc

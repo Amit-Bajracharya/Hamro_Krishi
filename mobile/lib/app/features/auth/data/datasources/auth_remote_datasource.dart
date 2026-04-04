@@ -43,6 +43,20 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   AuthRemoteDataSourceImpl(this.dio);
 
+  String _extractErrorMessage(dynamic data, String defaultMessage) {
+    if (data is Map<String, dynamic>) {
+      return data['error'] ?? data['message'] ?? defaultMessage;
+    }
+    if (data is String && data.isNotEmpty) {
+      // If it's a string but looks like HTML, don't return the whole thing
+      if (data.contains('<!DOCTYPE html>') || data.contains('<html')) {
+        return 'Server error (404/500). Please check if the backend is running.';
+      }
+      return data;
+    }
+    return defaultMessage;
+  }
+
   @override
   Future<UserEntity> login({
     required String identity,
@@ -57,28 +71,18 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         },
       );
       
-      print('Response status: ${response.statusCode}');
-      print('Response data type: ${response.data.runtimeType}');
-      print('Response data: ${response.data}');
-      
       if (response.statusCode == 200) {
-        // Check if response.data is a Map
         if (response.data is Map<String, dynamic>) {
           return UserEntity.fromJson(response.data as Map<String, dynamic>);
         } else {
-          throw Exception('Invalid response format: Expected Map, got ${response.data.runtimeType}');
+          throw Exception('Invalid response format from server');
         }
       } else {
-        throw Exception(response.data['message'] ?? 'Login failed');
+        throw Exception(_extractErrorMessage(response.data, 'Login failed'));
       }
     } on DioException catch (e) {
-      print('DioException: ${e.message}');
-      print('Response data: ${e.response?.data}');
-      final message = e.response?.data?['message'] ?? e.message ?? 'Network error';
-      throw Exception(message);
+      throw Exception(_extractErrorMessage(e.response?.data, e.message ?? 'Network error'));
     } catch (e) {
-      print('General exception: $e');
-      print('Exception type: ${e.runtimeType}');
       rethrow;
     }
   }
@@ -106,11 +110,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       );
 
       if (response.statusCode != 201) {
-        throw Exception(response.data['error'] ?? 'Failed to create farmer profile');
+        throw Exception(_extractErrorMessage(response.data, 'Failed to create farmer profile'));
       }
     } on DioException catch (e) {
-      final message = e.response?.data?['error'] ?? e.message ?? 'Network error';
-      throw Exception(message);
+      throw Exception(_extractErrorMessage(e.response?.data, e.message ?? 'Network error'));
     } catch (e) {
       throw Exception(e.toString());
     }
@@ -143,11 +146,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       );
 
       if (response.statusCode != 201) {
-        throw Exception(response.data['error'] ?? 'Failed to create trader profile');
+        throw Exception(_extractErrorMessage(response.data, 'Failed to create trader profile'));
       }
     } on DioException catch (e) {
-      final message = e.response?.data?['error'] ?? e.message ?? 'Network error';
-      throw Exception(message);
+      throw Exception(_extractErrorMessage(e.response?.data, e.message ?? 'Network error'));
     } catch (e) {
       throw Exception(e.toString());
     }
@@ -176,11 +178,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       );
 
       if (response.statusCode != 201) {
-        throw Exception(response.data['error'] ?? 'Failed to create consumer profile');
+        throw Exception(_extractErrorMessage(response.data, 'Failed to create consumer profile'));
       }
     } on DioException catch (e) {
-      final message = e.response?.data?['error'] ?? e.message ?? 'Network error';
-      throw Exception(message);
+      throw Exception(_extractErrorMessage(e.response?.data, e.message ?? 'Network error'));
     } catch (e) {
       throw Exception(e.toString());
     }

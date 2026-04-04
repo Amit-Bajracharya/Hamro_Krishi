@@ -38,7 +38,16 @@ import 'package:hamrokrishi_app/app/features/dashboard/data/datasources/contract
 import 'package:hamrokrishi_app/app/features/dashboard/data/repositories/contract_repository_impl.dart';
 import 'package:hamrokrishi_app/app/features/dashboard/domain/repositories/contract_repository.dart';
 import 'package:hamrokrishi_app/app/features/dashboard/domain/usecases/create_contract_use_case.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/domain/usecases/get_user_contracts_use_case.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/domain/usecases/update_contract_status_use_case.dart';
 import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/contract_bloc.dart';
+import 'package:hamrokrishi_app/app/features/trader/data/datasources/trader_product_remote_data_source.dart';
+import 'package:hamrokrishi_app/app/features/trader/data/repositories/trader_product_repository_impl.dart';
+import 'package:hamrokrishi_app/app/features/trader/domain/usecases/add_trader_product_use_case.dart';
+import 'package:hamrokrishi_app/app/features/trader/domain/usecases/get_trader_products_use_case.dart';
+import 'package:hamrokrishi_app/app/features/trader/presentation/bloc/trader_product_bloc.dart';
+import 'package:hamrokrishi_app/app/features/consumer_market/data/datasources/consumer_market_remote_data_source.dart';
+import 'package:hamrokrishi_app/app/features/consumer_market/presentation/bloc/consumer_market_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final sl = GetIt.instance;
@@ -51,6 +60,7 @@ Future<void> init() async {
   sl.registerFactory(() => RegisterFarmerBloc(registerFarmerUseCase: sl(), locationService: sl()));
   sl.registerFactory(() => RegisterTraderBloc(registerTraderUseCase: sl(), locationService: sl()));
   sl.registerFactory(() => RegisterConsumerBloc(registerConsumerUseCase: sl(), locationService: sl()));
+  sl.registerFactory(() => ConsumerMarketBloc(remoteDataSource: sl()));
   
   // Features - Product
   sl.registerFactory(() => ProductBloc(
@@ -68,7 +78,16 @@ Future<void> init() async {
         farmerRepository: sl(),
         productRepository: sl(),
       ));
-  sl.registerFactory(() => ContractBloc(createContractUseCase: sl()));
+  sl.registerFactory(() => ContractBloc(
+        createContractUseCase: sl(),
+        getUserContractsUseCase: sl(),
+        updateContractStatusUseCase: sl(),
+      ));
+  sl.registerFactory(() => TraderProductBloc(
+        addTraderProductUseCase: sl(),
+        getTraderProductsUseCase: sl(),
+        contractRepository: sl(),
+      ));
   
   // Use cases
   sl.registerLazySingleton(() => LoginUseCase(sl()));
@@ -81,6 +100,10 @@ Future<void> init() async {
   sl.registerLazySingleton(() => GetWeatherUseCase(sl()));
   sl.registerLazySingleton(() => GetPredictionUseCase(sl()));
   sl.registerLazySingleton(() => CreateContractUseCase(repository: sl()));
+  sl.registerLazySingleton(() => GetUserContractsUseCase(repository: sl()));
+  sl.registerLazySingleton(() => UpdateContractStatusUseCase(repository: sl()));
+  sl.registerLazySingleton(() => AddTraderProductUseCase(sl()));
+  sl.registerLazySingleton(() => GetTraderProductsUseCase(sl()));
   
   // Repository
   sl.registerLazySingleton<AuthRepository>(
@@ -106,6 +129,9 @@ Future<void> init() async {
   sl.registerLazySingleton<IContractRepository>(
     () => ContractRepositoryImpl(remoteDataSource: sl()),
   );
+  sl.registerLazySingleton<ITraderProductRepository>(
+    () => TraderProductRepositoryImpl(remoteDataSource: sl()),
+  );
   
   // Data sources
   sl.registerLazySingleton<AuthRemoteDataSource>(
@@ -130,6 +156,12 @@ Future<void> init() async {
 
   sl.registerLazySingleton<IContractRemoteDataSource>(
     () => ContractRemoteDataSourceImpl(dio: sl()),
+  );
+  sl.registerLazySingleton<ITraderProductRemoteDataSource>(
+    () => TraderProductRemoteDataSourceImpl(dio: sl()),
+  );
+  sl.registerLazySingleton<IConsumerMarketRemoteDataSource>(
+    () => ConsumerMarketRemoteDataSourceImpl(dio: sl()),
   );
 
   // Core

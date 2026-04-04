@@ -1,33 +1,77 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/login_bloc.dart';
+import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/login_state.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/weather_bloc.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/weather_event.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/prediction_bloc.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/prediction_event.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/widgets/weather_section.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/widgets/prediction_section.dart';
 
-class ConsumerDashboard extends StatelessWidget {
+class ConsumerDashboard extends StatefulWidget {
   const ConsumerDashboard({super.key});
+
+  @override
+  State<ConsumerDashboard> createState() => _ConsumerDashboardState();
+}
+
+class _ConsumerDashboardState extends State<ConsumerDashboard> {
+  @override
+  void initState() {
+    super.initState();
+    _fetchData();
+  }
+
+  void _fetchData() {
+    if (mounted) {
+      // Kathmandu, Nepal coordinates
+      const double ktmLat = 27.7172, ktmLon = 85.3240;
+      
+      context.read<WeatherBloc>().add(const WeatherEvent.fetchWeather(
+            latitude: ktmLat,
+            longitude: ktmLon,
+          ));
+      
+      context.read<PredictionBloc>().add(const PredictionEvent.fetchPrediction(
+            productName: '', 
+          ));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAF7),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: 24.h),
-              _buildHeader(),
-              SizedBox(height: 32.h),
-              _buildPointsCard(),
-              SizedBox(height: 32.h),
-              _buildRecentOrdersSection(),
-              SizedBox(height: 32.h),
-              _buildBrowseProductsSection(),
-              SizedBox(height: 32.h),
-              _buildSpecialOffersSection(),
-              SizedBox(height: 32.h),
-              _buildQuickActionsSection(),
-              SizedBox(height: 100.h), // Space for bottom navigation
-            ],
+        child: RefreshIndicator(
+          onRefresh: () async => _fetchData(),
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 24.h),
+                _buildHeader(),
+                SizedBox(height: 32.h),
+                WeatherSection(onRefresh: _fetchData),
+                SizedBox(height: 32.h),
+                PredictionSection(onRefresh: _fetchData),
+                SizedBox(height: 32.h),
+                _buildPointsCard(),
+                SizedBox(height: 32.h),
+                _buildRecentOrdersSection(),
+                SizedBox(height: 32.h),
+                _buildBrowseProductsSection(),
+                SizedBox(height: 32.h),
+                _buildSpecialOffersSection(),
+                SizedBox(height: 32.h),
+                _buildQuickActionsSection(),
+                SizedBox(height: 100.h), // Space for bottom navigation
+              ],
+            ),
           ),
         ),
       ),
@@ -35,6 +79,10 @@ class ConsumerDashboard extends StatelessWidget {
   }
 
   Widget _buildHeader() {
+    final userName = context.read<LoginBloc>().state.maybeWhen(
+          success: (user, _) => user.name,
+          orElse: () => 'Consumer',
+        );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -49,7 +97,7 @@ class ConsumerDashboard extends StatelessWidget {
         ),
         SizedBox(height: 8.h),
         Text(
-          'Good morning, Sarah',
+          'Good morning, $userName',
           style: TextStyle(
             fontSize: 24.sp,
             fontWeight: FontWeight.w900,
@@ -74,8 +122,8 @@ class ConsumerDashboard extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [const Color(0xFF2D5A27), const Color(0xFF4A7C59)],
+        gradient: const LinearGradient(
+          colors: [Color(0xFF2D5A27), Color(0xFF4A7C59)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -135,7 +183,7 @@ class ConsumerDashboard extends StatelessWidget {
               color: Colors.white.withOpacity(0.2),
               borderRadius: BorderRadius.circular(20.r),
             ),
-            child: Text(
+            child:  Text(
               'Redeem for discounts',
               style: TextStyle(
                 fontSize: 12.sp,
@@ -341,8 +389,8 @@ class ConsumerDashboard extends StatelessWidget {
           width: double.infinity,
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [const Color(0xFFFF6B6B), const Color(0xFFFF8E53)],
+            gradient: const LinearGradient(
+              colors: [Color(0xFFFF6B6B), Color(0xFFFF8E53)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),

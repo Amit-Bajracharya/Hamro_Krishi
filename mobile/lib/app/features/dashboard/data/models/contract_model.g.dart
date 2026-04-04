@@ -21,6 +21,9 @@ _ContractModel _$ContractModelFromJson(Map<String, dynamic> json) =>
       ),
       startDate: DateTime.parse(json['start_date'] as String),
       status: json['status'] as String? ?? 'active',
+      traderName: json['trader_name'] as String?,
+      farmerName: json['farmer_name'] as String?,
+      productName: json['product_name'] as String?,
       createdAt: json['created_at'] == null
           ? null
           : DateTime.parse(json['created_at'] as String),
@@ -44,6 +47,9 @@ Map<String, dynamic> _$ContractModelToJson(_ContractModel instance) =>
       ),
       'start_date': instance.startDate.toIso8601String(),
       'status': instance.status,
+      'trader_name': instance.traderName,
+      'farmer_name': instance.farmerName,
+      'product_name': instance.productName,
       'created_at': instance.createdAt?.toIso8601String(),
       'updated_at': instance.updatedAt?.toIso8601String(),
     };

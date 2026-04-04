@@ -15,6 +15,9 @@ abstract class ContractEntity with _$ContractEntity {
     @JsonKey(name: 'trader_selling_price') required double traderSellingPrice,
     @JsonKey(name: 'start_date') required DateTime startDate,
     @Default('active') String status,
+    @JsonKey(name: 'trader_name') String? traderName,
+    @JsonKey(name: 'farmer_name') String? farmerName,
+    @JsonKey(name: 'product_name') String? productName,
     @JsonKey(name: 'created_at') DateTime? createdAt,
     @JsonKey(name: 'updated_at') DateTime? updatedAt,
   }) = _ContractEntity;

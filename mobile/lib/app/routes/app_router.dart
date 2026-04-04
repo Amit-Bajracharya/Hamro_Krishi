@@ -7,12 +7,16 @@ import 'package:hamrokrishi_app/app/features/dashboard/presentation/pages/role_b
 import 'package:hamrokrishi_app/app/features/dashboard/presentation/pages/farmer_crops_screen.dart';
 import 'package:hamrokrishi_app/app/features/dashboard/presentation/pages/farmer_requests_screen.dart';
 import 'package:hamrokrishi_app/app/features/dashboard/presentation/pages/farmer_finances_screen.dart';
+import 'package:hamrokrishi_app/app/features/market/presentation/pages/trader_market_screen.dart';
 import 'package:hamrokrishi_app/app/features/product/presentation/pages/list_harvest_screen.dart';
 import 'package:hamrokrishi_app/app/features/product/presentation/bloc/product_bloc.dart';
-
-import 'package:hamrokrishi_app/app/features/market/presentation/pages/trader_market_screen.dart';
+import 'package:hamrokrishi_app/app/features/trader/presentation/bloc/trader_product_bloc.dart';
+import 'package:hamrokrishi_app/app/features/trader/presentation/pages/trader_products_screen.dart';
+import 'package:hamrokrishi_app/app/features/trader/presentation/pages/trader_add_product_screen.dart';
 import 'package:hamrokrishi_app/app/features/market/presentation/bloc/trader_market_bloc.dart';
 import 'package:hamrokrishi_app/app/features/market/presentation/bloc/trader_market_event.dart';
+import 'package:hamrokrishi_app/app/features/consumer_market/presentation/pages/consumer_market_screen.dart';
+import 'package:hamrokrishi_app/app/features/consumer_market/presentation/bloc/consumer_market_bloc.dart';
 import 'package:hamrokrishi_app/app/features/dashboard/presentation/pages/contracts_screen.dart';
 import 'package:hamrokrishi_app/app/features/dashboard/presentation/pages/account_screen.dart';
 import 'package:hamrokrishi_app/app/features/introduction_screen/presentation/pages/introduction_screen.dart';
@@ -34,7 +38,7 @@ final GoRouter router = GoRouter(
   navigatorKey: _rootNavigatorKey,
   initialLocation: AppRoutes.introduction,
   routes: [
-    // Auth Routes (Outside Shell)
+    // ─── Auth Routes (Outside Shell) ───────────────────────────────────────
     GoRoute(
       path: AppRoutes.introduction,
       builder: (context, state) => const IntroductionScreen(),
@@ -50,7 +54,6 @@ final GoRouter router = GoRouter(
       path: AppRoutes.registerRole,
       builder: (context, state) => const RegisterRoleScreen(),
     ),
-   
     GoRoute(
       path: AppRoutes.farmerRegister,
       builder: (context, state) => BlocProvider(
@@ -69,8 +72,6 @@ final GoRouter router = GoRouter(
       path: AppRoutes.middlewareRegister,
       builder: (context, state) => const MiddlewareRegisterScreen(),
     ),
-
-   
     GoRoute(
       path: AppRoutes.consumerRegister,
       builder: (context, state) => BlocProvider(
@@ -78,9 +79,8 @@ final GoRouter router = GoRouter(
         child: const ConsumerRegisterScreen(),
       ),
     ),
-   
 
-    // Dashboard Shell (Includes multiple tabs)
+    // ─── Dashboard Shell (Includes multiple tabs) ──────────────────────────
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
         return BlocProvider.value(
@@ -107,6 +107,7 @@ final GoRouter router = GoRouter(
             ),
           ],
         ),
+
         // Branch 1: Market (Trader/Consumer)
         StatefulShellBranch(
           initialLocation: AppRoutes.market,
@@ -114,13 +115,15 @@ final GoRouter router = GoRouter(
             GoRoute(
               path: AppRoutes.market,
               builder: (context, state) => BlocProvider(
-                create: (context) => sl<TraderMarketBloc>()..add(const TraderMarketEvent.fetchData()),
+                create: (context) =>
+                    sl<TraderMarketBloc>()..add(const TraderMarketEvent.fetchData()),
                 child: const TraderMarketScreen(),
               ),
             ),
           ],
         ),
-        // Branch 2: Contracts (Trader/Consumer)
+
+        // Branch 2: Contracts
         StatefulShellBranch(
           initialLocation: AppRoutes.contracts,
           routes: [
@@ -130,7 +133,8 @@ final GoRouter router = GoRouter(
             ),
           ],
         ),
-        // Branch 3: Account (Trader/Consumer)
+
+        // Branch 3: Account
         StatefulShellBranch(
           initialLocation: AppRoutes.account,
           routes: [
@@ -140,6 +144,7 @@ final GoRouter router = GoRouter(
             ),
           ],
         ),
+
         // Branch 4: Farmer Crops
         StatefulShellBranch(
           initialLocation: AppRoutes.farmerCrops,
@@ -162,6 +167,7 @@ final GoRouter router = GoRouter(
             ),
           ],
         ),
+
         // Branch 5: Farmer Requests
         StatefulShellBranch(
           initialLocation: AppRoutes.farmerRequests,
@@ -172,6 +178,7 @@ final GoRouter router = GoRouter(
             ),
           ],
         ),
+
         // Branch 6: Farmer Finances
         StatefulShellBranch(
           initialLocation: AppRoutes.farmerFinances,
@@ -183,6 +190,42 @@ final GoRouter router = GoRouter(
           ],
         ),
 
+        // Branch 7: Trader Products
+        StatefulShellBranch(
+          initialLocation: AppRoutes.traderProducts,
+          routes: [
+            GoRoute(
+              path: AppRoutes.traderProducts,
+              builder: (context, state) => BlocProvider(
+                create: (context) => sl<TraderProductBloc>(),
+                child: const TraderProductsScreen(),
+              ),
+              routes: [
+                GoRoute(
+                  path: AppRoutes.addTraderProduct,
+                  builder: (context, state) => BlocProvider(
+                    create: (context) => sl<TraderProductBloc>(),
+                    child: const TraderAddProductScreen(),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+
+        // Branch 8: Consumer Market (Price Transparency)
+        StatefulShellBranch(
+          initialLocation: AppRoutes.consumerMarket,
+          routes: [
+            GoRoute(
+              path: AppRoutes.consumerMarket,
+              builder: (context, state) => BlocProvider(
+                create: (context) => sl<ConsumerMarketBloc>(),
+                child: const ConsumerMarketScreen(),
+              ),
+            ),
+          ],
+        ),
       ],
     ),
   ],

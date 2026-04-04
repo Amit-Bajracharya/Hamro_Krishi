@@ -21,4 +21,25 @@ class ContractRepositoryImpl implements IContractRepository {
       return Left(ServerFailure(e.toString()));
     }
   }
+
+  @override
+  Future<Either<Failure, List<ContractEntity>>> getUserContracts(String userId, String role) async {
+    try {
+      final models = await remoteDataSource.getUserContracts(userId, role);
+      final entities = models.map((model) => model.toEntity()).toList();
+      return Right(entities);
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, ContractEntity>> updateContractStatus(String id, String status) async {
+    try {
+      final model = await remoteDataSource.updateContractStatus(id, status);
+      return Right(model.toEntity());
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
 }

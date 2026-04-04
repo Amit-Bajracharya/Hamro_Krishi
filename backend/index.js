@@ -18,6 +18,8 @@ app.use('/api/reviews',   require('./routes/review'));
 app.use('/api/notifications', require('./routes/notification'));
 app.use('/api/predictions',   require('./routes/prediction'));
 app.use('/api/trader-products', require('./routes/traderProduct'));
+app.use('/api/contracts', require('./routes/contractRoutes'));
+app.use('/api/transactions', require('./routes/transactionRoutes'));
 
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to Hamro Krishi API' });

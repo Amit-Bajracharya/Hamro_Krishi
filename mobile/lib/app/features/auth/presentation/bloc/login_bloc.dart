@@ -9,6 +9,14 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   LoginBloc({required this.loginUseCase}) : super(const LoginState.initial()) {
     on<LoginSubmitted>(_onLoginSubmitted);
     on<TogglePasswordVisibility>(_onTogglePasswordVisibility);
+    on<LogoutRequested>(_onLogoutRequested);
+  }
+
+  Future<void> _onLogoutRequested(
+    LogoutRequested event,
+    Emitter<LoginState> emit,
+  ) async {
+    emit(const LoginState.initial());
   }
 
   Future<void> _onLoginSubmitted(

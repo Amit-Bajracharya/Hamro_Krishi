@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/login_state.dart';
 import 'package:hamrokrishi_app/app/features/dashboard/domain/entities/weather.dart';
 import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/weather_bloc.dart';
 import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/weather_event.dart';
@@ -9,6 +10,17 @@ import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/predict
 import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/prediction_event.dart';
 import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/prediction_state.dart';
 import 'package:hamrokrishi_app/app/features/dashboard/domain/entities/prediction.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/widgets/weather_section.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/widgets/prediction_section.dart';
+import 'package:hamrokrishi_app/app/core/di/injection_container.dart';
+import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/login_bloc.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/contract_bloc.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/contract_event.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/contract_state.dart';
+import 'package:hamrokrishi_app/app/features/product/presentation/bloc/product_bloc.dart';
+
+
+import 'package:hamrokrishi_app/app/features/dashboard/domain/entities/contract_entity.dart';
 
 class FarmerDashboard extends StatefulWidget {
   const FarmerDashboard({super.key});
@@ -38,6 +50,21 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
       context.read<PredictionBloc>().add(const PredictionEvent.fetchPrediction(
             productName: '', // Fetch all
           ));
+
+      // Fetch Farmer specific data for stats
+      final loginState = context.read<LoginBloc>().state;
+      loginState.maybeWhen(
+        success: (user, _) {
+          context.read<ContractBloc>().add(ContractEvent.fetchUserContracts(
+                userId: user.id,
+                role: 'farmer',
+              ));
+          context.read<ProductBloc>().add(ProductEvent.fetchFarmerProducts(
+                farmerId: user.id,
+              ));
+        },
+        orElse: () {},
+      );
     }
   }
 
@@ -49,32 +76,51 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF9FAF7),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: 24.h),
-              _buildHeader(),
-              SizedBox(height: 32.h),
-              _buildWeatherSection(),
-              SizedBox(height: 32.h),
-              _buildPredictionSection(),
-              SizedBox(height: 32.h),
-              _buildStatsCards(),
-              SizedBox(height: 32.h),
-              _buildActiveContractsSection(),
-              SizedBox(height: 32.h),
-              _buildMarketPricesSection(),
-              SizedBox(height: 32.h),
-              _buildRecentActivitySection(),
-              SizedBox(height: 100.h), // Space for bottom navigation
-            ],
-          ),
-        ),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (context) => sl<ContractBloc>()),
+        BlocProvider(create: (context) => sl<ProductBloc>()),
+      ],
+      child: Builder(
+        builder: (context) {
+          // Re-trigger fetch because we just provided these blocs
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+             _fetchWeather();
+          });
+
+          return Scaffold(
+            backgroundColor: const Color(0xFFF9FAF7),
+            body: SafeArea(
+              child: RefreshIndicator(
+                onRefresh: () async => _fetchWeather(),
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 24.h),
+                      _buildHeader(),
+                      SizedBox(height: 32.h),
+                      WeatherSection(onRefresh: _fetchWeather),
+                      SizedBox(height: 32.h),
+                      PredictionSection(onRefresh: () => _fetchPrediction('')),
+                      SizedBox(height: 32.h),
+                      _buildStatsSection(),
+                      SizedBox(height: 32.h),
+                      _buildActiveContractsSection(),
+                      SizedBox(height: 32.h),
+                      _buildMarketPricesSection(),
+                      SizedBox(height: 32.h),
+                      _buildRecentActivitySection(),
+                      SizedBox(height: 100.h), 
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
       ),
     );
   }
@@ -114,430 +160,40 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
     );
   }
 
-  Widget _buildWeatherSection() {
-    return BlocBuilder<WeatherBloc, WeatherState>(
-      builder: (context, state) {
-        return state.when(
-          initial: () => _buildWeatherContainer(child: const Center(child: CircularProgressIndicator(color: Colors.white))),
-          loading: () => _buildWeatherContainer(child: const Center(child: CircularProgressIndicator(color: Colors.white))),
-          error: (message) => _buildWeatherContainer(
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error_outline, color: Colors.white, size: 32),
-                  SizedBox(height: 8.h),
-                  Text(
-                    'Failed to load weather',
-                    style: TextStyle(color: Colors.white, fontSize: 14.sp),
-                  ),
-                  TextButton(
-                    onPressed: _fetchWeather,
-                    child: const Text('Retry', style: TextStyle(color: Colors.white)),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          loaded: (weather) => _buildWeatherContent(weather),
+  Widget _buildStatsSection() {
+    return BlocBuilder<ContractBloc, ContractState>(
+      builder: (context, contractState) {
+        return BlocBuilder<ProductBloc, ProductState>(
+          builder: (context, productState) {
+            final contracts = contractState.maybeWhen(
+              contractsLoaded: (c) => c,
+              orElse: () => <ContractEntity>[],
+            );
+            
+            final products = productState.maybeWhen(
+              loaded: (p) => p,
+              orElse: () => [],
+            );
+
+            final activeContracts = contracts.where((c) => c.status == 'active').toList();
+            final totalRevenue = activeContracts.fold<double>(0, (sum, c) => sum + (c.farmerSellingPrice * c.quantity));
+
+            return _buildStatsCards(
+              totalRevenue: totalRevenue,
+              activeContractsCount: activeContracts.length,
+              productsListedCount: products.length,
+            );
+          },
         );
       },
     );
   }
 
-  Widget _buildWeatherContainer({required Widget child}) {
-    return Container(
-      width: double.infinity,
-      height: 200.h,
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF87CEEB), Color(0xFF4A90E2)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: child,
-    );
-  }
-
-  Widget _buildWeatherContent(Weather weather) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF87CEEB), Color(0xFF4A90E2)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Image.network(
-                'https://openweathermap.org/img/wn/${weather.icon}@2x.png',
-                width: 24.sp,
-                height: 24.sp,
-                errorBuilder: (context, error, stackTrace) => Icon(Icons.wb_sunny, color: Colors.white, size: 24.sp),
-              ),
-              SizedBox(width: 12.w),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Today\'s Weather',
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  Text(
-                    'Kathmandu, Nepal',
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      color: Colors.white.withOpacity(0.8),
-                    ),
-                  ),
-                ],
-              ),
-              const Spacer(),
-              GestureDetector(
-                onTap: _fetchWeather,
-                child: Icon(Icons.refresh, color: Colors.white.withOpacity(0.8), size: 20.sp),
-              ),
-            ],
-          ),
-          SizedBox(height: 20.h),
-          Row(
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '${weather.temperature.toStringAsFixed(0)}°C',
-                    style: TextStyle(
-                      fontSize: 48.sp,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                    ),
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    weather.condition.toUpperCase(),
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      color: Colors.white.withOpacity(0.9),
-                    ),
-                  ),
-                ],
-              ),
-              const Spacer(),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  _buildWeatherDetail('Humidity', '${weather.humidity}%'),
-                  SizedBox(height: 8.h),
-                  _buildWeatherDetail('Wind', '${weather.windSpeed.toStringAsFixed(1)} km/h'),
-                  SizedBox(height: 8.h),
-                  _buildWeatherDetail('Rain', '${weather.rainProbability}%'),
-                ],
-              ),
-            ],
-          ),
-          SizedBox(height: 20.h),
-          Container(
-            padding: EdgeInsets.all(12.w),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.agriculture, color: Colors.white, size: 20.sp),
-                SizedBox(width: 8.w),
-                Text(
-                  weather.temperature > 15 && weather.temperature < 35 
-                      ? 'Good conditions for farming today'
-                      : 'Be careful with the weather today',
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildWeatherDetail(String label, String value) {
-    return Row(
-      children: [
-        Text(
-          '$label: ',
-          style: TextStyle(
-            fontSize: 12.sp,
-            color: Colors.white.withOpacity(0.8),
-          ),
-        ),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 12.sp,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPredictionSection() {
-    return BlocBuilder<PredictionBloc, PredictionState>(
-      builder: (context, state) {
-        return state.when(
-          initial: () => _buildPredictionContainer(child: const Center(child: CircularProgressIndicator(color: Colors.white))),
-          loading: () => _buildPredictionContainer(child: const Center(child: CircularProgressIndicator(color: Colors.white))),
-          error: (message) => _buildPredictionContainer(
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.analytics_outlined, color: Colors.white, size: 32),
-                  SizedBox(height: 8.h),
-                  Text(
-                    'Failed to load prediction',
-                    style: TextStyle(color: Colors.white, fontSize: 14.sp),
-                  ),
-                  TextButton(
-                    onPressed: () => _fetchPrediction('Tomato'),
-                    child: const Text('Retry', style: TextStyle(color: Colors.white)),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          loaded: (predictions) => _buildPredictionContent(predictions),
-        );
-      },
-    );
-  }
-
-  Widget _buildPredictionContainer({required Widget child}) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF008080), Color(0xFF20B2AA)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: child,
-    );
-  }
-
-  Widget _buildPredictionContent(List<Prediction> predictions) {
-    // Filter for specific products requested by user
-    final requestedProducts = ['Potato', 'Apple', 'Cauliflower', 'Onion', 'Bottle Gourd (Lauka)'];
-    final filteredPredictions = predictions.where((p) {
-      return requestedProducts.any((r) => 
-        p.productName.toLowerCase().contains(r.split(' ')[0].toLowerCase()));
-    }).toList();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.auto_awesome, color: const Color(0xFF008080), size: 24.sp),
-                SizedBox(width: 8.w),
-                Text(
-                  'Market Predictions',
-                  style: TextStyle(
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF1B3A1A),
-                  ),
-                ),
-              ],
-            ),
-            GestureDetector(
-              onTap: () => _fetchPrediction(''),
-              child: Icon(Icons.refresh, color: Colors.grey[400], size: 20.sp),
-            ),
-          ],
-        ),
-        SizedBox(height: 16.h),
-        SizedBox(
-          height: 200.h,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: filteredPredictions.length,
-            separatorBuilder: (context, index) => SizedBox(width: 16.w),
-            itemBuilder: (context, index) {
-              final prediction = filteredPredictions[index];
-              return _buildPredictionCard(prediction);
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPredictionCard(Prediction prediction) {
-    return Container(
-      width: 300.w,
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF008080), Color(0xFF20B2AA)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF008080).withOpacity(0.3),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  prediction.productName,
-                  style: TextStyle(
-                    fontSize: 17.sp,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-                child: Text(
-                  prediction.demandLevel,
-                  style: TextStyle(
-                    fontSize: 11.sp,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 12.h),
-          Row(
-            children: [
-              Icon(Icons.trending_up, color: Colors.white.withValues(alpha: 0.9), size: 18.sp),
-              SizedBox(width: 6.w),
-              Text(
-                'Trend: ${prediction.estimatedPriceTrend}',
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white.withValues(alpha: 0.9),
-                ),
-              ),
-            ],
-          ),
-          const Spacer(),
-          Container(
-            width: double.infinity,
-            padding: EdgeInsets.all(12.w),
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-            ),
-            child: Text(
-              prediction.reasoning,
-              style: TextStyle(
-                fontSize: 12.sp,
-                color: Colors.white.withValues(alpha: 0.95),
-                height: 1.4,
-                fontStyle: FontStyle.italic,
-              ),
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPredictionDetail(String label, String value) {
-    return Row(
-      children: [
-        Text(
-          '$label: ',
-          style: TextStyle(
-            fontSize: 12.sp,
-            color: Colors.white.withOpacity(0.8),
-          ),
-        ),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 12.sp,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatsCards() {
+  Widget _buildStatsCards({
+    required double totalRevenue,
+    required int activeContractsCount,
+    required int productsListedCount,
+  }) {
     return Column(
       children: [
         Row(
@@ -545,22 +201,22 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
             Expanded(
               child: _buildStatCard(
                 'Total Revenue',
-                '\$12,450',
-                'This month',
+                'Rs. ${totalRevenue.toStringAsFixed(0)}',
+                'From active contracts',
                 const Color(0xFF4CAF50),
                 Icons.trending_up,
-                '+12%',
+                totalRevenue > 0 ? '+100%' : '0%',
               ),
             ),
             SizedBox(width: 12.w),
             Expanded(
               child: _buildStatCard(
                 'Active Contracts',
-                '8',
-                '2 ending soon',
+                activeContractsCount.toString(),
+                'Current active',
                 const Color(0xFF2196F3),
                 Icons.description,
-                '+2',
+                activeContractsCount > 0 ? 'Live' : 'No active',
               ),
             ),
           ],
@@ -571,11 +227,11 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
             Expanded(
               child: _buildStatCard(
                 'Products Listed',
-                '24',
-                '5 categories',
+                productsListedCount.toString(),
+                'On marketplace',
                 const Color(0xFFFF9800),
                 Icons.inventory_2,
-                '+3',
+                productsListedCount > 0 ? 'Live' : 'Drafts',
               ),
             ),
             SizedBox(width: 12.w),
@@ -679,61 +335,61 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
   }
 
   Widget _buildActiveContractsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return BlocBuilder<ContractBloc, ContractState>(
+      builder: (context, state) {
+        final activeContracts = state.maybeWhen(
+          contractsLoaded: (contracts) => contracts.where((c) => c.status == 'active').toList(),
+          orElse: () => <ContractEntity>[],
+        );
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Active Contracts',
-              style: TextStyle(
-                fontSize: 20.sp,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF1B3A1A),
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Active Contracts',
+                  style: TextStyle(
+                    fontSize: 20.sp,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF1B3A1A),
+                  ),
+                ),
+                Text(
+                  'View all',
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: const Color(0xFF2D5A27),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
-            Text(
-              'View all',
-              style: TextStyle(
-                fontSize: 12.sp,
-                color: const Color(0xFF2D5A27),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            SizedBox(height: 16.h),
+            if (activeContracts.isEmpty)
+              Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20.h),
+                  child: Text('No active contracts', style: TextStyle(color: Colors.grey[500])),
+                ),
+              )
+            else
+              ...activeContracts.take(3).map((contract) => Padding(
+                padding: EdgeInsets.only(bottom: 12.h),
+                child: _buildContractCard(
+                  'ID: ${contract.id?.substring(0, 8) ?? 'N/A'}',
+                  contract.productName ?? 'Product',
+                  contract.traderName ?? 'Trader',
+                  '${contract.quantity} kg',
+                  'Rs. ${contract.farmerSellingPrice}/kg',
+                  'Active',
+                  const Color(0xFF4CAF50),
+                ),
+              )),
           ],
-        ),
-        SizedBox(height: 16.h),
-        _buildContractCard(
-          'Contract #F2024-08',
-          'Fresh Tomatoes',
-          'Metro Traders Ltd.',
-          '850 kg',
-          '\$3.20/kg',
-          '5 days left',
-          const Color(0xFFFF9800),
-        ),
-        SizedBox(height: 12.h),
-        _buildContractCard(
-          'Contract #F2024-07',
-          'Organic Lettuce',
-          'Green Valley Co.',
-          '400 kg',
-          '\$4.50/kg',
-          '12 days left',
-          const Color(0xFF4CAF50),
-        ),
-        SizedBox(height: 12.h),
-        _buildContractCard(
-          'Contract #F2024-06',
-          'Quality Wheat',
-          'City Markets',
-          '1,200 kg',
-          '\$2.80/kg',
-          '3 days left',
-          const Color(0xFFFF6B6B),
-        ),
-      ],
+        );
+      },
     );
   }
 

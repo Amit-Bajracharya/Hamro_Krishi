@@ -19,6 +19,9 @@ abstract class ContractModel with _$ContractModel {
     @JsonKey(name: 'trader_selling_price') @DoubleConverter() required double traderSellingPrice,
     @JsonKey(name: 'start_date') required DateTime startDate,
     @Default('active') String status,
+    @JsonKey(name: 'trader_name') String? traderName,
+    @JsonKey(name: 'farmer_name') String? farmerName,
+    @JsonKey(name: 'product_name') String? productName,
     @JsonKey(name: 'created_at') DateTime? createdAt,
     @JsonKey(name: 'updated_at') DateTime? updatedAt,
   }) = _ContractModel;
@@ -36,6 +39,9 @@ abstract class ContractModel with _$ContractModel {
       traderSellingPrice: entity.traderSellingPrice,
       startDate: entity.startDate,
       status: entity.status,
+      traderName: entity.traderName,
+      farmerName: entity.farmerName,
+      productName: entity.productName,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
     );
@@ -52,6 +58,9 @@ abstract class ContractModel with _$ContractModel {
       traderSellingPrice: traderSellingPrice,
       startDate: startDate,
       status: status,
+      traderName: traderName,
+      farmerName: farmerName,
+      productName: productName,
       createdAt: createdAt,
       updatedAt: updatedAt,
     );

@@ -36,7 +36,7 @@ class TraderMarketScreen extends StatelessWidget {
                   backgroundColor: Colors.green,
                 ),
               );
-              Navigator.of(context).pop(); // Close dialog on success
+              // pop() moved to dialog level to prevent assertion errors
             },
             failure: (message) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -454,141 +454,235 @@ class TraderMarketScreen extends StatelessWidget {
     final quantityController = TextEditingController(text: product.quantity.toString());
     final priceController = TextEditingController(text: product.price.toString());
     final formKey = GlobalKey<FormState>();
+    bool isStepTwo = false;
 
     showDialog(
       context: context,
-      builder: (dialogContext) => BlocProvider.value(
-        value: context.read<ContractBloc>(),
-        child: AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
-          title: Column(
-            children: [
-              Text(
-                'Offer Contract',
-                style: TextStyle(
-                  fontSize: 20.sp,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF1B3A1A),
-                ),
-              ),
-              SizedBox(height: 4.h),
-              Text(
-                'For ${product.name}',
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  color: Colors.grey[600],
-                ),
-              ),
-            ],
-          ),
-          content: SingleChildScrollView(
-            child: Form(
-              key: formKey,
-              child: Column(
+      builder: (dialogContext) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: context.read<ContractBloc>()),
+          BlocProvider.value(value: context.read<LoginBloc>()),
+        ],
+        child: BlocListener<ContractBloc, ContractState>(
+          listener: (context, state) {
+            state.whenOrNull(
+              success: (_) {
+                if (Navigator.of(dialogContext).canPop()) {
+                  Navigator.of(dialogContext).pop();
+                }
+              },
+            );
+          },
+          child: StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24.r)),
+              titlePadding: EdgeInsets.zero,
+              contentPadding: EdgeInsets.zero,
+              actionsPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+              content: Column(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildDialogInfoRow('Farmer', product.farmerName ?? 'Unknown'),
-                  _buildDialogInfoRow('Farmer Price', 'Rs. ${product.price}/kg'),
-                  SizedBox(height: 20.h),
-                  Text(
-                    'Quantity (kg)',
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey[700],
+                  // Custom Header
+                  Container(
+                    padding: EdgeInsets.all(24.w),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2D5A27).withOpacity(0.05),
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+                    ),
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(12.w),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2D5A27).withOpacity(0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            isStepTwo ? Icons.edit_document : Icons.handshake_rounded,
+                            color: const Color(0xFF2D5A27),
+                            size: 32.sp,
+                          ),
+                        ),
+                        SizedBox(height: 16.h),
+                        Text(
+                          isStepTwo ? 'Set Your Terms' : 'Contract Proposal',
+                          style: TextStyle(
+                            fontSize: 20.sp,
+                            fontWeight: FontWeight.w900,
+                            color: const Color(0xFF1B3A1A),
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        SizedBox(height: 4.h),
+                        Text(
+                          'For ${product.name}',
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  SizedBox(height: 8.h),
-                  TextFormField(
-                    controller: quantityController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      hintText: 'Enter quantity',
-                      filled: true,
-                      fillColor: Colors.grey[100],
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                    validator: (value) =>
-                        value == null || value.isEmpty ? 'Please enter quantity' : null,
-                  ),
-                  SizedBox(height: 16.h),
-                  Text(
-                    'Your Selling Price (Rs./kg)',
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey[700],
-                    ),
-                  ),
-                  SizedBox(height: 8.h),
-                  TextFormField(
-                    controller: priceController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      hintText: 'Enter your price',
-                      filled: true,
-                      fillColor: Colors.grey[100],
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                    validator: (value) =>
-                        value == null || value.isEmpty ? 'Please enter price' : null,
+                  
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: isStepTwo 
+                      ? _buildStepTwoContent(formKey, quantityController, priceController)
+                      : _buildStepOneContent(product),
                   ),
                 ],
               ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: Text(
+                    'Cancel',
+                    style: TextStyle(
+                      color: Colors.grey[500],
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14.sp,
+                    ),
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                if (!isStepTwo)
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        isStepTwo = true;
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2D5A27),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('Proceed', style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold)),
+                        SizedBox(width: 8.w),
+                        Icon(Icons.arrow_forward_rounded, size: 18.sp),
+                      ],
+                    ),
+                  )
+                else
+                  ElevatedButton(
+                    onPressed: () {
+                      if (formKey.currentState!.validate()) {
+                        final loginState = context.read<LoginBloc>().state;
+                        final traderId = loginState.maybeWhen(
+                          success: (user, _) => user.id,
+                          orElse: () => '',
+                        );
+
+                        if (traderId.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Please login to offer contract')),
+                          );
+                          return;
+                        }
+
+                        final contract = ContractEntity(
+                          farmerId: product.farmerId ?? '',
+                          middlemanId: traderId,
+                          productId: product.id ?? '',
+                          quantity: double.parse(quantityController.text),
+                          farmerSellingPrice: product.price,
+                          traderSellingPrice: double.parse(priceController.text),
+                          startDate: DateTime.now(),
+                          status: 'pending',
+                        );
+
+                        context.read<ContractBloc>().add(ContractEvent.createContract(contract));
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2D5A27),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                    ),
+                    child: Text('Submit Offer', style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold)),
+                  ),
+              ],
+            );
+          },
+        ),
+      ),
+    ),
+  );
+}
+
+  Widget _buildStepOneContent(ProductEntity product) {
+    return Padding(
+      padding: EdgeInsets.all(24.w),
+      child: Column(
+        children: [
+          _buildAgreementItem(
+            Icons.person_outline, 
+            'Farmer', 
+            product.farmerName ?? 'Unknown'
+          ),
+          SizedBox(height: 16.h),
+          _buildAgreementItem(
+            Icons.payments_outlined, 
+            'Base Price', 
+            'Rs. ${product.price}/kg'
+          ),
+          SizedBox(height: 16.h),
+          _buildAgreementItem(
+            Icons.inventory_2_outlined, 
+            'Stock Available', 
+            '${product.quantity} kg'
+          ),
+          SizedBox(height: 24.h),
+          Text(
+            'By proceeding, you agree to initiate a formal trade agreement with this farmer.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 12.sp,
+              color: Colors.grey[500],
+              fontStyle: FontStyle.italic,
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: Text(
-                'Cancel',
-                style: TextStyle(color: Colors.grey[600]),
-              ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStepTwoContent(GlobalKey<FormState> formKey, TextEditingController qCtrl, TextEditingController pCtrl) {
+    return Padding(
+      padding: EdgeInsets.all(24.w),
+      child: Form(
+        key: formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildFieldLabel('Target Quantity (kg)'),
+            SizedBox(height: 8.h),
+            _buildStepTextField(
+              controller: qCtrl,
+              icon: Icons.numbers_rounded,
+              hint: 'e.g. 500',
             ),
-            ElevatedButton(
-              onPressed: () {
-                if (formKey.currentState!.validate()) {
-                  final loginState = context.read<LoginBloc>().state;
-                  final traderId = loginState.maybeWhen(
-                    success: (user, _) => user.id,
-                    orElse: () => '',
-                  );
-
-                  if (traderId.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Please login to offer contract')),
-                    );
-                    return;
-                  }
-
-                  final contract = ContractEntity(
-                    farmerId: product.farmerId ?? '',
-                    middlemanId: traderId,
-                    productId: product.id ?? '',
-                    quantity: double.parse(quantityController.text),
-                    farmerSellingPrice: product.price,
-                    traderSellingPrice: double.parse(priceController.text),
-                    startDate: DateTime.now(),
-                    status: 'active',
-                  );
-
-                  context.read<ContractBloc>().add(ContractEvent.createContract(contract));
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2D5A27),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-              ),
-              child: const Text('Submit Offer', style: TextStyle(color: Colors.white)),
+            SizedBox(height: 20.h),
+            _buildFieldLabel('Your Market Price (Rs./kg)'),
+            SizedBox(height: 8.h),
+            _buildStepTextField(
+              controller: pCtrl,
+              icon: Icons.sell_outlined,
+              hint: 'e.g. 120',
             ),
           ],
         ),
@@ -596,28 +690,61 @@ class TraderMarketScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDialogInfoRow(String label, String value) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 4.h),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 13.sp,
-              color: Colors.grey[600],
+  Widget _buildAgreementItem(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(icon, size: 20.sp, color: const Color(0xFF2D5A27)),
+        SizedBox(width: 12.w),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: TextStyle(fontSize: 11.sp, color: Colors.grey[500], fontWeight: FontWeight.bold),
             ),
-          ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 13.sp,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF1B3A1A),
+            Text(
+              value,
+              style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.bold, color: const Color(0xFF1B3A1A)),
             ),
-          ),
-        ],
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFieldLabel(String label) {
+    return Text(
+      label,
+      style: TextStyle(
+        fontSize: 12.sp,
+        fontWeight: FontWeight.w800,
+        color: Colors.grey[700],
+        letterSpacing: 0.5,
+      ),
+    );
+  }
+
+  Widget _buildStepTextField({
+    required TextEditingController controller,
+    required IconData icon,
+    required String hint,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F6F2),
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: TextFormField(
+        controller: controller,
+        keyboardType: TextInputType.number,
+        style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold),
+        decoration: InputDecoration(
+          hintText: hint,
+          prefixIcon: Icon(icon, color: const Color(0xFF2D5A27), size: 18.sp),
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+        ),
+        validator: (value) => value == null || value.isEmpty ? 'Required' : null,
       ),
     );
   }

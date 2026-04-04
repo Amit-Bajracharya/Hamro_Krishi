@@ -21,19 +21,22 @@ class RegisterFarmerBloc extends Bloc<RegisterFarmerEvent, RegisterFarmerState> 
     FetchLocation event,
     Emitter<RegisterFarmerState> emit,
   ) async {
-    emit(state.copyWith(isLocationLoading: true));
+    emit(state.copyWith(
+      isLocationLoading: true,
+      locationError: null,
+    ));
     try {
       final position = await locationService.getCurrentPosition();
       emit(state.copyWith(
         latitude: position.latitude,
         longitude: position.longitude,
         isLocationLoading: false,
+        locationError: null,
       ));
     } catch (e) {
       emit(state.copyWith(
         isLocationLoading: false,
-        // We could also emit a failure state specifically for location, 
-        // but for now we'll just stop loading.
+        locationError: e.toString().replaceFirst('Exception: ', ''),
       ));
     }
   }
@@ -46,6 +49,7 @@ class RegisterFarmerBloc extends Bloc<RegisterFarmerEvent, RegisterFarmerState> 
       isPasswordHidden: state.isPasswordHidden,
       latitude: state.latitude,
       longitude: state.longitude,
+      locationError: state.locationError,
     ));
 
     final result = await registerFarmerUseCase(
@@ -61,9 +65,15 @@ class RegisterFarmerBloc extends Bloc<RegisterFarmerEvent, RegisterFarmerState> 
       (error) => emit(RegisterFarmerState.failure(
         error: error,
         isPasswordHidden: state.isPasswordHidden,
+        latitude: state.latitude,
+        longitude: state.longitude,
+        locationError: state.locationError,
       )),
       (_) => emit(RegisterFarmerState.success(
         isPasswordHidden: state.isPasswordHidden,
+        latitude: state.latitude,
+        longitude: state.longitude,
+        locationError: state.locationError,
       )),
     );
   }
@@ -73,30 +83,34 @@ class RegisterFarmerBloc extends Bloc<RegisterFarmerEvent, RegisterFarmerState> 
     Emitter<RegisterFarmerState> emit,
   ) {
     state.maybeWhen(
-      initial: (isHidden, lat, lng, isLocLoading) => emit(RegisterFarmerState.initial(
+      initial: (isHidden, lat, lng, isLocLoading, locErr) => emit(RegisterFarmerState.initial(
         isPasswordHidden: !isHidden,
         latitude: lat,
         longitude: lng,
         isLocationLoading: isLocLoading,
+        locationError: locErr,
       )),
-      loading: (isHidden, lat, lng, isLocLoading) => emit(RegisterFarmerState.loading(
+      loading: (isHidden, lat, lng, isLocLoading, locErr) => emit(RegisterFarmerState.loading(
         isPasswordHidden: !isHidden,
         latitude: lat,
         longitude: lng,
         isLocationLoading: isLocLoading,
+        locationError: locErr,
       )),
-      success: (isHidden, lat, lng, isLocLoading) => emit(RegisterFarmerState.success(
+      success: (isHidden, lat, lng, isLocLoading, locErr) => emit(RegisterFarmerState.success(
         isPasswordHidden: !isHidden,
         latitude: lat,
         longitude: lng,
         isLocationLoading: isLocLoading,
+        locationError: locErr,
       )),
-      failure: (error, isHidden, lat, lng, isLocLoading) => emit(RegisterFarmerState.failure(
+      failure: (error, isHidden, lat, lng, isLocLoading, locErr) => emit(RegisterFarmerState.failure(
         error: error,
         isPasswordHidden: !isHidden,
         latitude: lat,
         longitude: lng,
         isLocationLoading: isLocLoading,
+        locationError: locErr,
       )),
       orElse: () {},
     );

@@ -26,28 +26,32 @@ class RoleBasedDashboard extends StatelessWidget {
         // Debug: Print the current role to console
         print('Current role in RoleBasedDashboard: $role');
 
-        switch (role) {
-          case 'farmer':
-            return MultiBlocProvider(
-              providers: [
-                BlocProvider(create: (context) => sl<WeatherBloc>()),
-                BlocProvider(create: (context) => sl<PredictionBloc>()),
-              ],
-              child: const FarmerDashboard(),
-            );
-          case 'middlemen':
-          case 'trader':
-          case 'middleman':
-            return BlocProvider(
-              create: (context) => sl<TraderDashboardBloc>()..add(const TraderDashboardEvent.fetchData()),
-              child:  TraderDashboard(),
-            );
-          case 'consumer':
-            return const ConsumerDashboard();
-          default:
-            print('Unknown role: $role, defaulting to FarmerDashboard');
-            return const FarmerDashboard();
-        }
+        final child = () {
+          switch (role) {
+            case 'farmer':
+              return const FarmerDashboard();
+            case 'middlemen':
+            case 'trader':
+            case 'middleman':
+              return BlocProvider(
+                create: (context) => sl<TraderDashboardBloc>()..add(const TraderDashboardEvent.fetchData()),
+                child: const TraderDashboard(),
+              );
+            case 'consumer':
+              return const ConsumerDashboard();
+            default:
+              print('Unknown role: $role, defaulting to FarmerDashboard');
+              return const FarmerDashboard();
+          }
+        }();
+
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider(create: (context) => sl<WeatherBloc>()),
+            BlocProvider(create: (context) => sl<PredictionBloc>()),
+          ],
+          child: child,
+        );
       },
     );
   }

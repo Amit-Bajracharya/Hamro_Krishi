@@ -21,17 +21,22 @@ class RegisterConsumerBloc extends Bloc<RegisterConsumerEvent, RegisterConsumerS
     FetchLocation event,
     Emitter<RegisterConsumerState> emit,
   ) async {
-    emit(state.copyWith(isLocationLoading: true));
+    emit(state.copyWith(
+      isLocationLoading: true,
+      locationError: null,
+    ));
     try {
       final position = await locationService.getCurrentPosition();
       emit(state.copyWith(
         latitude: position.latitude,
         longitude: position.longitude,
         isLocationLoading: false,
+        locationError: null,
       ));
     } catch (e) {
       emit(state.copyWith(
         isLocationLoading: false,
+        locationError: e.toString().replaceFirst('Exception: ', ''),
       ));
     }
   }
@@ -44,6 +49,7 @@ class RegisterConsumerBloc extends Bloc<RegisterConsumerEvent, RegisterConsumerS
       isPasswordHidden: state.isPasswordHidden,
       latitude: state.latitude,
       longitude: state.longitude,
+      locationError: state.locationError,
     ));
 
     final result = await registerConsumerUseCase(
@@ -59,9 +65,15 @@ class RegisterConsumerBloc extends Bloc<RegisterConsumerEvent, RegisterConsumerS
       (error) => emit(RegisterConsumerState.failure(
         error: error,
         isPasswordHidden: state.isPasswordHidden,
+        latitude: state.latitude,
+        longitude: state.longitude,
+        locationError: state.locationError,
       )),
       (_) => emit(RegisterConsumerState.success(
         isPasswordHidden: state.isPasswordHidden,
+        latitude: state.latitude,
+        longitude: state.longitude,
+        locationError: state.locationError,
       )),
     );
   }
@@ -71,22 +83,34 @@ class RegisterConsumerBloc extends Bloc<RegisterConsumerEvent, RegisterConsumerS
     Emitter<RegisterConsumerState> emit,
   ) {
     state.maybeWhen(
-      initial: (isHidden, lat, lng, isLocLoading) => emit(RegisterConsumerState.initial(
+      initial: (isHidden, lat, lng, isLocLoading, locErr) => emit(RegisterConsumerState.initial(
         isPasswordHidden: !isHidden,
-        latitude: lat,        longitude: lng,        isLocationLoading: isLocLoading,
+        latitude: lat,
+        longitude: lng,
+        isLocationLoading: isLocLoading,
+        locationError: locErr,
       )),
-      loading: (isHidden, lat, lng, isLocLoading) => emit(RegisterConsumerState.loading(
+      loading: (isHidden, lat, lng, isLocLoading, locErr) => emit(RegisterConsumerState.loading(
         isPasswordHidden: !isHidden,
-        latitude: lat,        longitude: lng,        isLocationLoading: isLocLoading,
+        latitude: lat,
+        longitude: lng,
+        isLocationLoading: isLocLoading,
+        locationError: locErr,
       )),
-      success: (isHidden, lat, lng, isLocLoading) => emit(RegisterConsumerState.success(
+      success: (isHidden, lat, lng, isLocLoading, locErr) => emit(RegisterConsumerState.success(
         isPasswordHidden: !isHidden,
-        latitude: lat,        longitude: lng,        isLocationLoading: isLocLoading,
+        latitude: lat,
+        longitude: lng,
+        isLocationLoading: isLocLoading,
+        locationError: locErr,
       )),
-      failure: (error, isHidden, lat, lng, isLocLoading) => emit(RegisterConsumerState.failure(
+      failure: (error, isHidden, lat, lng, isLocLoading, locErr) => emit(RegisterConsumerState.failure(
         error: error,
         isPasswordHidden: !isHidden,
-        latitude: lat,        longitude: lng,        isLocationLoading: isLocLoading,
+        latitude: lat,
+        longitude: lng,
+        isLocationLoading: isLocLoading,
+        locationError: locErr,
       )),
       orElse: () {},
     );

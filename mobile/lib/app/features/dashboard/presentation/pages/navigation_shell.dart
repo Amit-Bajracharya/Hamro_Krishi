@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/login_bloc.dart';
+import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/login_event.dart';
 import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/login_state.dart';
 import 'package:hamrokrishi_app/app/features/dashboard/presentation/widgets/navigation/farmer_navigation_bar.dart';
 import 'package:hamrokrishi_app/app/features/dashboard/presentation/widgets/navigation/trader_navigation_bar.dart';
@@ -19,11 +20,22 @@ class NavigationShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF9FAF7),
-      appBar: _buildAppBar(context),
-      body: navigationShell,
-      bottomNavigationBar: _buildBottomNavigationBar(context),
+    return BlocListener<LoginBloc, LoginState>(
+      listener: (context, state) {
+        state.maybeWhen(
+          initial: (_) {
+            // Redirect to login screen when state is initial (logged out)
+            context.go('/login');
+          },
+          orElse: () {},
+        );
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF9FAF7),
+        appBar: _buildAppBar(context),
+        body: navigationShell,
+        bottomNavigationBar: _buildBottomNavigationBar(context),
+      ),
     );
   }
 
@@ -59,13 +71,34 @@ class NavigationShell extends StatelessWidget {
           case 'middlemen':
           case 'trader':
           case 'middleman':
-            mappedIndex = navigationShell.currentIndex <= 3 ? navigationShell.currentIndex : 0;
+            if (navigationShell.currentIndex == 0) {
+              mappedIndex = 0;
+            } else if (navigationShell.currentIndex == 1) {
+              mappedIndex = 1;
+            } else if (navigationShell.currentIndex == 7) {
+              mappedIndex = 2; // NEW: Crops tab
+            } else if (navigationShell.currentIndex == 2) {
+              mappedIndex = 3;
+            } else if (navigationShell.currentIndex == 3) {
+              mappedIndex = 4;
+            }
+            
             return TraderNavigationBar(
               currentIndex: mappedIndex,
               onTap: (index) => _onTap(context, index),
             );
           case 'consumer':
-            mappedIndex = navigationShell.currentIndex <= 3 ? navigationShell.currentIndex : 0;
+            if (navigationShell.currentIndex == 0) {
+              mappedIndex = 0;
+            } else if (navigationShell.currentIndex == 8) {
+              mappedIndex = 1;
+            } else if (navigationShell.currentIndex == 2) {
+              mappedIndex = 2;
+            } else if (navigationShell.currentIndex == 3) {
+              mappedIndex = 3;
+            } else {
+              mappedIndex = 0;
+            }
             return ConsumerNavigationBar(
               currentIndex: mappedIndex,
               onTap: (index) => _onTap(context, index),
@@ -137,6 +170,36 @@ class NavigationShell extends StatelessWidget {
             size: 26.sp,
           ),
         ),
+        IconButton(
+          onPressed: () {
+            // Logout logic
+            showDialog(
+              context: context,
+              builder: (dialogContext) => AlertDialog(
+                title: const Text('Logout'),
+                content: const Text('Are you sure you want to logout?'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(),
+                    child: const Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(dialogContext).pop();
+                      context.read<LoginBloc>().add(const LoginEvent.logoutRequested());
+                    },
+                    child: const Text('Logout', style: TextStyle(color: Colors.red)),
+                  ),
+                ],
+              ),
+            );
+          },
+          icon: Icon(
+            Icons.logout_rounded,
+            color: const Color(0xFF1B3A1A),
+            size: 24.sp,
+          ),
+        ),
         SizedBox(width: 8.w),
       ],
     );
@@ -192,9 +255,12 @@ class NavigationShell extends StatelessWidget {
         navigationShell.goBranch(1);
         break;
       case 2:
-        navigationShell.goBranch(2);
+        navigationShell.goBranch(7); // Branch for Trader Crops
         break;
       case 3:
+        navigationShell.goBranch(2);
+        break;
+      case 4:
         navigationShell.goBranch(3);
         break;
     }
@@ -206,7 +272,7 @@ class NavigationShell extends StatelessWidget {
         navigationShell.goBranch(0);
         break;
       case 1:
-        navigationShell.goBranch(1);
+        navigationShell.goBranch(8);
         break;
       case 2:
         navigationShell.goBranch(2);

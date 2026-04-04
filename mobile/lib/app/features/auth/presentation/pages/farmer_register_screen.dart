@@ -232,13 +232,13 @@ class _FarmerRegisterScreenState extends State<FarmerRegisterScreen> {
     return BlocConsumer<RegisterFarmerBloc, RegisterFarmerState>(
       listener: (context, state) {
         state.maybeWhen(
-          success: (isHidden, lat, lng, isLocLoading) {
+          success: (isHidden, lat, lng, isLocLoading, locErr) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Registered successfully! Please check your email for verification.')),
             );
             context.go(AppRoutes.login);
           },
-          failure: (error, isHidden, lat, lng, isLocLoading) {
+          failure: (error, isHidden, lat, lng, isLocLoading, locErr) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(error), backgroundColor: Colors.red),
             );
@@ -338,15 +338,19 @@ class _FarmerRegisterScreenState extends State<FarmerRegisterScreen> {
     return BlocBuilder<RegisterFarmerBloc, RegisterFarmerState>(
       buildWhen: (previous, current) => 
           previous.isLocationLoading != current.isLocationLoading || 
-          previous.latitude != current.latitude,
+          previous.latitude != current.latitude ||
+          previous.locationError != current.locationError,
       builder: (context, state) {
+        final hasError = state.locationError != null;
         return Container(
           padding: EdgeInsets.all(12.w),
           decoration: BoxDecoration(
-            color: const Color(0xFFF5F6F2),
+            color: hasError ? const Color(0xFFFFF2F2) : const Color(0xFFF5F6F2),
             borderRadius: BorderRadius.circular(16.r),
             border: Border.all(
-              color: state.latitude != null ? const Color(0xFF2D5A27).withValues(alpha: 0.2) : Colors.transparent,
+              color: state.latitude != null 
+                  ? const Color(0xFF2D5A27).withValues(alpha: 0.2) 
+                  : hasError ? Colors.red.withValues(alpha: 0.2) : Colors.transparent,
             ),
           ),
           child: Row(
@@ -354,7 +358,9 @@ class _FarmerRegisterScreenState extends State<FarmerRegisterScreen> {
               Container(
                 padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
-                  color: state.latitude != null ? const Color(0xFF2D5A27) : Colors.grey[300],
+                  color: state.latitude != null 
+                      ? const Color(0xFF2D5A27) 
+                      : hasError ? Colors.red : Colors.grey[300],
                   shape: BoxShape.circle,
                 ),
                 child: state.isLocationLoading
@@ -364,7 +370,7 @@ class _FarmerRegisterScreenState extends State<FarmerRegisterScreen> {
                         child: const CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                       )
                     : Icon(
-                        state.latitude != null ? Icons.check : Icons.location_on_outlined,
+                        state.latitude != null ? Icons.check : hasError ? Icons.error_outline : Icons.location_on_outlined,
                         size: 16.sp,
                         color: Colors.white,
                       ),
@@ -375,11 +381,11 @@ class _FarmerRegisterScreenState extends State<FarmerRegisterScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      state.latitude != null ? 'Location Captured' : 'GPS Location',
+                      state.latitude != null ? 'Location Captured' : hasError ? 'Location Error' : 'GPS Location',
                       style: TextStyle(
                         fontSize: 13.sp,
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFF1B3A1A),
+                        color: hasError ? Colors.red[900] : const Color(0xFF1B3A1A),
                       ),
                     ),
                     Text(
@@ -387,8 +393,11 @@ class _FarmerRegisterScreenState extends State<FarmerRegisterScreen> {
                           ? 'Fetching coordinates...' 
                           : state.latitude != null 
                               ? 'Lat: ${state.latitude!.toStringAsFixed(4)}, Long: ${state.longitude!.toStringAsFixed(4)}'
-                              : 'Tap to refresh location',
-                      style: TextStyle(fontSize: 11.sp, color: Colors.grey[600]),
+                              : state.locationError ?? 'Tap to refresh location',
+                      style: TextStyle(
+                        fontSize: 11.sp, 
+                        color: hasError ? Colors.red[700] : Colors.grey[600],
+                      ),
                     ),
                   ],
                 ),
@@ -398,7 +407,11 @@ class _FarmerRegisterScreenState extends State<FarmerRegisterScreen> {
                   onPressed: () {
                     context.read<RegisterFarmerBloc>().add(const RegisterFarmerEvent.fetchLocation());
                   },
-                  icon: Icon(Icons.refresh, size: 18.sp, color: const Color(0xFF2D5A27)),
+                  icon: Icon(
+                    Icons.refresh, 
+                    size: 18.sp, 
+                    color: hasError ? Colors.red : const Color(0xFF2D5A27),
+                  ),
                 ),
             ],
           ),
@@ -406,6 +419,7 @@ class _FarmerRegisterScreenState extends State<FarmerRegisterScreen> {
       },
     );
   }
+
 
   Widget _buildFooter() {
     return Column(

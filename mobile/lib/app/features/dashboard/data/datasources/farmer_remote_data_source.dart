@@ -15,7 +15,10 @@ class FarmerRemoteDataSourceImpl implements IFarmerRemoteDataSource {
     try {
       final response = await dio.get(ApiConstants.farmers);
       if (response.statusCode == 200) {
-        return response.data['count'] as int;
+        final data = response.data['count'];
+        if (data is int) return data;
+        if (data is String) return int.tryParse(data) ?? 0;
+        return 0;
       } else {
         throw Exception('Failed to fetch farmer count');
       }

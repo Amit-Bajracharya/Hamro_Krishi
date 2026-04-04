@@ -1,144 +1,135 @@
 const db = require('../db');
 
-// POST /api/trader-products
-exports.createTraderProduct = async (req, res) => {
-  const { contract_id, quantity_for_sale, latitude, longitude } = req.body;
-
-  if (!contract_id || !quantity_for_sale || !latitude || !longitude) {
-    return res.status(400).json({ success: false, error: 'contract_id, quantity_for_sale, latitude, longitude are required' });
-  }
-
+/**
+ * Create a new trader product listing from an active contract.
+ */
+const createTraderProduct = async (req, res) => {
   try {
-    const result = await db.query(
-      `INSERT INTO public.trader_product (contract_id, quantity_for_sale, latitude, longitude)
-       VALUES ($1, $2, $3, $4) RETURNING *`,
-      [contract_id, quantity_for_sale, latitude, longitude]
-    );
-    res.status(201).json({ success: true, data: result.rows[0] });
-  } catch (error) {
-    console.error('Create Trader Product Error:', error);
-    if (error.code === '23503') {
-      return res.status(404).json({ success: false, error: 'Referenced contract does not exist.' });
+    const { contract_id, quantity_for_sale, latitude, longitude, status } = req.body;
+
+    if (!contract_id || !quantity_for_sale || !latitude || !longitude) {
+      return res.status(400).json({ error: 'Missing required fields' });
     }
-    res.status(500).json({ success: false, error: 'Server error creating trader product.' });
-  }
-};
 
-// GET /api/trader-products
-exports.getAllTraderProducts = async (req, res) => {
-  try {
-    const query = `
-      SELECT tp.*, 
-             c.trader_selling_price AS selling_price,
-             p.name AS product_name, p.category, p.harvest_date, p.expiry_date,
-             m.business_name AS trader_business, m.name AS trader_name
-      FROM public.trader_product tp
-      LEFT JOIN public.contracts c ON tp.contract_id = c.id
-      LEFT JOIN public.product p ON c.product_id = p.id
-      LEFT JOIN public.middlemen m ON c.middleman_id = m.id
-      ORDER BY tp.created_at DESC
-    `;
-    const result = await db.query(query);
-    res.json({ success: true, count: result.rowCount, data: result.rows });
-  } catch (error) {
-    console.error('Get All Trader Products Error:', error);
-    res.status(500).json({ success: false, error: 'Failed to fetch trader products.' });
-  }
-};
-
-// GET /api/trader-products/:id
-exports.getTraderProductById = async (req, res) => {
-  try {
     const result = await db.query(
-      `SELECT tp.*, 
-             c.trader_selling_price AS selling_price,
-             p.name AS product_name, p.category, p.harvest_date, p.expiry_date,
-             m.business_name AS trader_business, m.name AS trader_name
-       FROM public.trader_product tp
-       LEFT JOIN public.contracts c ON tp.contract_id = c.id
-       LEFT JOIN public.product p ON c.product_id = p.id
-       LEFT JOIN public.middlemen m ON c.middleman_id = m.id
-       WHERE tp.id = $1`,
-      [req.params.id]
+      `INSERT INTO public.trader_product (contract_id, quantity_for_sale, latitude, longitude, status)
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [contract_id, quantity_for_sale, latitude, longitude, status || 'available']
     );
-    if (result.rows.length === 0) {
-      return res.status(404).json({ success: false, error: 'Trader product not found.' });
-    }
-    res.json({ success: true, data: result.rows[0] });
+
+    res.status(201).json({ message: 'Trader product listed successfully', data: result.rows[0] });
   } catch (error) {
-    console.error('Get Trader Product By ID Error:', error);
-    res.status(500).json({ success: false, error: 'Failed to fetch trader product.' });
+    console.error('Error creating trader product:', error);
+    res.status(500).json({ error: error.message || 'Server error' });
   }
 };
 
-// GET /api/trader-products/trader/:middlemanId
-exports.getTraderProductsByTrader = async (req, res) => {
+/**
+ * Get all product listings for a specific trader.
+ */
+const getTraderProducts = async (req, res) => {
   try {
+    const { trader_id } = req.params;
+
     const result = await db.query(
-      `SELECT tp.*, 
-             c.trader_selling_price AS selling_price,
-             p.name AS product_name, p.category
+      `SELECT 
+        tp.*,
+        c.middleman_id,
+        c.trader_selling_price,
+        p.name AS product_name,
+        p.category,
+        p.expiry_date,
+        p.image_url
        FROM public.trader_product tp
-       LEFT JOIN public.contracts c ON tp.contract_id = c.id
+       INNER JOIN public.contracts c ON tp.contract_id = c.id
        LEFT JOIN public.product p ON c.product_id = p.id
-       WHERE c.middleman_id = $1 
+       WHERE c.middleman_id = $1
        ORDER BY tp.created_at DESC`,
-      [req.params.middlemanId]
+      [trader_id]
     );
-    res.json({ success: true, count: result.rowCount, data: result.rows });
+
+    const flattenedData = result.rows.map((item) => ({
+      id: item.id,
+      contract_id: item.contract_id,
+      quantity_for_sale: item.quantity_for_sale,
+      latitude: item.latitude,
+      longitude: item.longitude,
+      status: item.status,
+      created_at: item.created_at,
+      product_name: item.product_name,
+      trader_selling_price: item.trader_selling_price,
+      category: item.category,
+      image_url: item.image_url,
+      expiry_date: item.expiry_date,
+    }));
+
+    res.status(200).json({ data: flattenedData });
   } catch (error) {
-    console.error('Get Trader Products By Trader Error:', error);
-    res.status(500).json({ success: false, error: 'Failed to fetch trader products.' });
+    console.error('Error fetching trader products:', error);
+    res.status(500).json({ error: error.message || 'Server error' });
   }
 };
 
-// PUT /api/trader-products/:id
-exports.updateTraderProduct = async (req, res) => {
-  const { id } = req.params;
-  const allowedFields = ['quantity_for_sale', 'latitude', 'longitude', 'status'];
-  const updates = [], values = [];
-  let i = 1;
-
-  for (const field of allowedFields) {
-    if (req.body[field] !== undefined) {
-      updates.push(`${field} = $${i++}`);
-      values.push(req.body[field]);
-    }
-  }
-
-  if (updates.length === 0) {
-    return res.status(400).json({ success: false, error: 'No valid fields provided for update.' });
-  }
-
-  values.push(id);
+/**
+ * Get a single trader product listing by ID.
+ */
+const getTraderProductById = async (req, res) => {
   try {
+    const { id } = req.params;
+
     const result = await db.query(
-      `UPDATE public.trader_product SET ${updates.join(', ')} WHERE id = $${i} RETURNING *`,
-      values
+      `SELECT 
+        tp.*,
+        c.middleman_id,
+        c.trader_selling_price,
+        p.name AS product_name,
+        p.category,
+        p.image_url
+       FROM public.trader_product tp
+       INNER JOIN public.contracts c ON tp.contract_id = c.id
+       LEFT JOIN public.product p ON c.product_id = p.id
+       WHERE tp.id = $1`,
+      [id]
     );
+
     if (result.rows.length === 0) {
-      return res.status(404).json({ success: false, error: 'Trader product not found.' });
+      return res.status(404).json({ error: 'Product listing not found' });
     }
-    res.json({ success: true, data: result.rows[0] });
+
+    res.status(200).json({ data: result.rows[0] });
   } catch (error) {
-    console.error('Update Trader Product Error:', error);
-    res.status(500).json({ success: false, error: 'Server error updating trader product.' });
+    console.error('Error fetching trader product detail:', error);
+    res.status(500).json({ error: error.message || 'Server error' });
   }
 };
 
-// DELETE /api/trader-products/:id
-exports.deleteTraderProduct = async (req, res) => {
+/**
+ * Update the status of a trader product (e.g., 'sold', 'available', 'hidden').
+ */
+const updateTraderProductStatus = async (req, res) => {
   try {
+    const { id } = req.params;
+    const { status } = req.body;
+
     const result = await db.query(
-      'DELETE FROM public.trader_product WHERE id = $1 RETURNING *',
-      [req.params.id]
+      `UPDATE public.trader_product SET status = $1 WHERE id = $2 RETURNING *`,
+      [status, id]
     );
+
     if (result.rows.length === 0) {
-      return res.status(404).json({ success: false, error: 'Trader product not found.' });
+      return res.status(404).json({ error: 'Product listing not found' });
     }
-    res.json({ success: true, message: 'Trader product deleted successfully.' });
+
+    res.status(200).json({ message: 'Product status updated', data: result.rows[0] });
   } catch (error) {
-    console.error('Delete Trader Product Error:', error);
-    res.status(500).json({ success: false, error: 'Server error deleting trader product.' });
+    console.error('Error updating trader product status:', error);
+    res.status(500).json({ error: error.message || 'Server error' });
   }
+};
+
+module.exports = {
+  createTraderProduct,
+  getTraderProducts,
+  getTraderProductById,
+  updateTraderProductStatus,
 };

@@ -9,6 +9,7 @@ abstract class RegisterConsumerState with _$RegisterConsumerState {
     double? latitude,
     double? longitude,
     @Default(false) bool isLocationLoading,
+    String? locationError,
   }) = Initial;
 
   const factory RegisterConsumerState.loading({
@@ -16,6 +17,7 @@ abstract class RegisterConsumerState with _$RegisterConsumerState {
     double? latitude,
     double? longitude,
     @Default(false) bool isLocationLoading,
+    String? locationError,
   }) = Loading;
 
   const factory RegisterConsumerState.success({
@@ -23,6 +25,7 @@ abstract class RegisterConsumerState with _$RegisterConsumerState {
     double? latitude,
     double? longitude,
     @Default(false) bool isLocationLoading,
+    String? locationError,
   }) = Success;
 
   const factory RegisterConsumerState.failure({
@@ -31,5 +34,6 @@ abstract class RegisterConsumerState with _$RegisterConsumerState {
     double? latitude,
     double? longitude,
     @Default(false) bool isLocationLoading,
+    String? locationError,
   }) = Failure;
 }

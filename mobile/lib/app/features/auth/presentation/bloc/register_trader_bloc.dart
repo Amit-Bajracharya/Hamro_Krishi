@@ -21,17 +21,22 @@ class RegisterTraderBloc extends Bloc<RegisterTraderEvent, RegisterTraderState> 
     FetchLocation event,
     Emitter<RegisterTraderState> emit,
   ) async {
-    emit(state.copyWith(isLocationLoading: true));
+    emit(state.copyWith(
+      isLocationLoading: true,
+      locationError: null,
+    ));
     try {
       final position = await locationService.getCurrentPosition();
       emit(state.copyWith(
         latitude: position.latitude,
         longitude: position.longitude,
         isLocationLoading: false,
+        locationError: null,
       ));
     } catch (e) {
       emit(state.copyWith(
         isLocationLoading: false,
+        locationError: e.toString().replaceFirst('Exception: ', ''),
       ));
     }
   }
@@ -44,6 +49,7 @@ class RegisterTraderBloc extends Bloc<RegisterTraderEvent, RegisterTraderState> 
       isPasswordHidden: state.isPasswordHidden,
       latitude: state.latitude,
       longitude: state.longitude,
+      locationError: state.locationError,
     ));
 
     final result = await registerTraderUseCase(
@@ -61,9 +67,15 @@ class RegisterTraderBloc extends Bloc<RegisterTraderEvent, RegisterTraderState> 
       (error) => emit(RegisterTraderState.failure(
         error: error,
         isPasswordHidden: state.isPasswordHidden,
+        latitude: state.latitude,
+        longitude: state.longitude,
+        locationError: state.locationError,
       )),
       (_) => emit(RegisterTraderState.success(
         isPasswordHidden: state.isPasswordHidden,
+        latitude: state.latitude,
+        longitude: state.longitude,
+        locationError: state.locationError,
       )),
     );
   }
@@ -73,22 +85,34 @@ class RegisterTraderBloc extends Bloc<RegisterTraderEvent, RegisterTraderState> 
     Emitter<RegisterTraderState> emit,
   ) {
     state.maybeWhen(
-      initial: (isHidden, lat, lng, isLocLoading) => emit(RegisterTraderState.initial(
+      initial: (isHidden, lat, lng, isLocLoading, locErr) => emit(RegisterTraderState.initial(
         isPasswordHidden: !isHidden,
-        latitude: lat,        longitude: lng,        isLocationLoading: isLocLoading,
+        latitude: lat,
+        longitude: lng,
+        isLocationLoading: isLocLoading,
+        locationError: locErr,
       )),
-      loading: (isHidden, lat, lng, isLocLoading) => emit(RegisterTraderState.loading(
+      loading: (isHidden, lat, lng, isLocLoading, locErr) => emit(RegisterTraderState.loading(
         isPasswordHidden: !isHidden,
-        latitude: lat,        longitude: lng,        isLocationLoading: isLocLoading,
+        latitude: lat,
+        longitude: lng,
+        isLocationLoading: isLocLoading,
+        locationError: locErr,
       )),
-      success: (isHidden, lat, lng, isLocLoading) => emit(RegisterTraderState.success(
+      success: (isHidden, lat, lng, isLocLoading, locErr) => emit(RegisterTraderState.success(
         isPasswordHidden: !isHidden,
-        latitude: lat,        longitude: lng,        isLocationLoading: isLocLoading,
+        latitude: lat,
+        longitude: lng,
+        isLocationLoading: isLocLoading,
+        locationError: locErr,
       )),
-      failure: (error, isHidden, lat, lng, isLocLoading) => emit(RegisterTraderState.failure(
+      failure: (error, isHidden, lat, lng, isLocLoading, locErr) => emit(RegisterTraderState.failure(
         error: error,
         isPasswordHidden: !isHidden,
-        latitude: lat,        longitude: lng,        isLocationLoading: isLocLoading,
+        latitude: lat,
+        longitude: lng,
+        isLocationLoading: isLocLoading,
+        locationError: locErr,
       )),
       orElse: () {},
     );

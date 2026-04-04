@@ -9,6 +9,7 @@ abstract class RegisterTraderState with _$RegisterTraderState {
     double? latitude,
     double? longitude,
     @Default(false) bool isLocationLoading,
+    String? locationError,
   }) = Initial;
 
   const factory RegisterTraderState.loading({
@@ -16,6 +17,7 @@ abstract class RegisterTraderState with _$RegisterTraderState {
     double? latitude,
     double? longitude,
     @Default(false) bool isLocationLoading,
+    String? locationError,
   }) = Loading;
 
   const factory RegisterTraderState.success({
@@ -23,6 +25,7 @@ abstract class RegisterTraderState with _$RegisterTraderState {
     double? latitude,
     double? longitude,
     @Default(false) bool isLocationLoading,
+    String? locationError,
   }) = Success;
 
   const factory RegisterTraderState.failure({
@@ -31,5 +34,6 @@ abstract class RegisterTraderState with _$RegisterTraderState {
     double? latitude,
     double? longitude,
     @Default(false) bool isLocationLoading,
+    String? locationError,
   }) = Failure;
 }

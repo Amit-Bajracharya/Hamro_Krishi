@@ -14,70 +14,30 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ContractEvent {
 
- ContractEntity get contract;
-/// Create a copy of ContractEvent
-/// with the given fields replaced by the non-null parameter values.
-@JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-$ContractEventCopyWith<ContractEvent> get copyWith => _$ContractEventCopyWithImpl<ContractEvent>(this as ContractEvent, _$identity);
+
 
 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ContractEvent&&(identical(other.contract, contract) || other.contract == contract));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ContractEvent);
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,contract);
+int get hashCode => runtimeType.hashCode;
 
 @override
 String toString() {
-  return 'ContractEvent(contract: $contract)';
+  return 'ContractEvent()';
 }
 
 
 }
 
 /// @nodoc
-abstract mixin class $ContractEventCopyWith<$Res>  {
-  factory $ContractEventCopyWith(ContractEvent value, $Res Function(ContractEvent) _then) = _$ContractEventCopyWithImpl;
-@useResult
-$Res call({
- ContractEntity contract
-});
-
-
-$ContractEntityCopyWith<$Res> get contract;
-
-}
-/// @nodoc
-class _$ContractEventCopyWithImpl<$Res>
-    implements $ContractEventCopyWith<$Res> {
-  _$ContractEventCopyWithImpl(this._self, this._then);
-
-  final ContractEvent _self;
-  final $Res Function(ContractEvent) _then;
-
-/// Create a copy of ContractEvent
-/// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? contract = null,}) {
-  return _then(_self.copyWith(
-contract: null == contract ? _self.contract : contract // ignore: cast_nullable_to_non_nullable
-as ContractEntity,
-  ));
-}
-/// Create a copy of ContractEvent
-/// with the given fields replaced by the non-null parameter values.
-@override
-@pragma('vm:prefer-inline')
-$ContractEntityCopyWith<$Res> get contract {
-  
-  return $ContractEntityCopyWith<$Res>(_self.contract, (value) {
-    return _then(_self.copyWith(contract: value));
-  });
-}
+class $ContractEventCopyWith<$Res>  {
+$ContractEventCopyWith(ContractEvent _, $Res Function(ContractEvent) __);
 }
 
 
@@ -95,11 +55,13 @@ extension ContractEventPatterns on ContractEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( CreateContract value)?  createContract,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( CreateContract value)?  createContract,TResult Function( FetchUserContracts value)?  fetchUserContracts,TResult Function( UpdateContractStatus value)?  updateContractStatus,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case CreateContract() when createContract != null:
-return createContract(_that);case _:
+return createContract(_that);case FetchUserContracts() when fetchUserContracts != null:
+return fetchUserContracts(_that);case UpdateContractStatus() when updateContractStatus != null:
+return updateContractStatus(_that);case _:
   return orElse();
 
 }
@@ -117,11 +79,13 @@ return createContract(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( CreateContract value)  createContract,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( CreateContract value)  createContract,required TResult Function( FetchUserContracts value)  fetchUserContracts,required TResult Function( UpdateContractStatus value)  updateContractStatus,}){
 final _that = this;
 switch (_that) {
 case CreateContract():
-return createContract(_that);case _:
+return createContract(_that);case FetchUserContracts():
+return fetchUserContracts(_that);case UpdateContractStatus():
+return updateContractStatus(_that);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -138,11 +102,13 @@ return createContract(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( CreateContract value)?  createContract,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( CreateContract value)?  createContract,TResult? Function( FetchUserContracts value)?  fetchUserContracts,TResult? Function( UpdateContractStatus value)?  updateContractStatus,}){
 final _that = this;
 switch (_that) {
 case CreateContract() when createContract != null:
-return createContract(_that);case _:
+return createContract(_that);case FetchUserContracts() when fetchUserContracts != null:
+return fetchUserContracts(_that);case UpdateContractStatus() when updateContractStatus != null:
+return updateContractStatus(_that);case _:
   return null;
 
 }
@@ -159,10 +125,12 @@ return createContract(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( ContractEntity contract)?  createContract,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( ContractEntity contract)?  createContract,TResult Function( String userId,  String role)?  fetchUserContracts,TResult Function( String id,  String status)?  updateContractStatus,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case CreateContract() when createContract != null:
-return createContract(_that.contract);case _:
+return createContract(_that.contract);case FetchUserContracts() when fetchUserContracts != null:
+return fetchUserContracts(_that.userId,_that.role);case UpdateContractStatus() when updateContractStatus != null:
+return updateContractStatus(_that.id,_that.status);case _:
   return orElse();
 
 }
@@ -180,10 +148,12 @@ return createContract(_that.contract);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( ContractEntity contract)  createContract,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( ContractEntity contract)  createContract,required TResult Function( String userId,  String role)  fetchUserContracts,required TResult Function( String id,  String status)  updateContractStatus,}) {final _that = this;
 switch (_that) {
 case CreateContract():
-return createContract(_that.contract);case _:
+return createContract(_that.contract);case FetchUserContracts():
+return fetchUserContracts(_that.userId,_that.role);case UpdateContractStatus():
+return updateContractStatus(_that.id,_that.status);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -200,10 +170,12 @@ return createContract(_that.contract);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( ContractEntity contract)?  createContract,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( ContractEntity contract)?  createContract,TResult? Function( String userId,  String role)?  fetchUserContracts,TResult? Function( String id,  String status)?  updateContractStatus,}) {final _that = this;
 switch (_that) {
 case CreateContract() when createContract != null:
-return createContract(_that.contract);case _:
+return createContract(_that.contract);case FetchUserContracts() when fetchUserContracts != null:
+return fetchUserContracts(_that.userId,_that.role);case UpdateContractStatus() when updateContractStatus != null:
+return updateContractStatus(_that.id,_that.status);case _:
   return null;
 
 }
@@ -218,11 +190,11 @@ class CreateContract implements ContractEvent {
   const CreateContract(this.contract);
   
 
-@override final  ContractEntity contract;
+ final  ContractEntity contract;
 
 /// Create a copy of ContractEvent
 /// with the given fields replaced by the non-null parameter values.
-@override @JsonKey(includeFromJson: false, includeToJson: false)
+@JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
 $CreateContractCopyWith<CreateContract> get copyWith => _$CreateContractCopyWithImpl<CreateContract>(this, _$identity);
 
@@ -248,13 +220,13 @@ String toString() {
 /// @nodoc
 abstract mixin class $CreateContractCopyWith<$Res> implements $ContractEventCopyWith<$Res> {
   factory $CreateContractCopyWith(CreateContract value, $Res Function(CreateContract) _then) = _$CreateContractCopyWithImpl;
-@override @useResult
+@useResult
 $Res call({
  ContractEntity contract
 });
 
 
-@override $ContractEntityCopyWith<$Res> get contract;
+$ContractEntityCopyWith<$Res> get contract;
 
 }
 /// @nodoc
@@ -267,7 +239,7 @@ class _$CreateContractCopyWithImpl<$Res>
 
 /// Create a copy of ContractEvent
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? contract = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? contract = null,}) {
   return _then(CreateContract(
 null == contract ? _self.contract : contract // ignore: cast_nullable_to_non_nullable
 as ContractEntity,
@@ -284,6 +256,142 @@ $ContractEntityCopyWith<$Res> get contract {
     return _then(_self.copyWith(contract: value));
   });
 }
+}
+
+/// @nodoc
+
+
+class FetchUserContracts implements ContractEvent {
+  const FetchUserContracts({required this.userId, required this.role});
+  
+
+ final  String userId;
+ final  String role;
+
+/// Create a copy of ContractEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$FetchUserContractsCopyWith<FetchUserContracts> get copyWith => _$FetchUserContractsCopyWithImpl<FetchUserContracts>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FetchUserContracts&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.role, role) || other.role == role));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,userId,role);
+
+@override
+String toString() {
+  return 'ContractEvent.fetchUserContracts(userId: $userId, role: $role)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $FetchUserContractsCopyWith<$Res> implements $ContractEventCopyWith<$Res> {
+  factory $FetchUserContractsCopyWith(FetchUserContracts value, $Res Function(FetchUserContracts) _then) = _$FetchUserContractsCopyWithImpl;
+@useResult
+$Res call({
+ String userId, String role
+});
+
+
+
+
+}
+/// @nodoc
+class _$FetchUserContractsCopyWithImpl<$Res>
+    implements $FetchUserContractsCopyWith<$Res> {
+  _$FetchUserContractsCopyWithImpl(this._self, this._then);
+
+  final FetchUserContracts _self;
+  final $Res Function(FetchUserContracts) _then;
+
+/// Create a copy of ContractEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? userId = null,Object? role = null,}) {
+  return _then(FetchUserContracts(
+userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
+as String,role: null == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class UpdateContractStatus implements ContractEvent {
+  const UpdateContractStatus({required this.id, required this.status});
+  
+
+ final  String id;
+ final  String status;
+
+/// Create a copy of ContractEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$UpdateContractStatusCopyWith<UpdateContractStatus> get copyWith => _$UpdateContractStatusCopyWithImpl<UpdateContractStatus>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is UpdateContractStatus&&(identical(other.id, id) || other.id == id)&&(identical(other.status, status) || other.status == status));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,id,status);
+
+@override
+String toString() {
+  return 'ContractEvent.updateContractStatus(id: $id, status: $status)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $UpdateContractStatusCopyWith<$Res> implements $ContractEventCopyWith<$Res> {
+  factory $UpdateContractStatusCopyWith(UpdateContractStatus value, $Res Function(UpdateContractStatus) _then) = _$UpdateContractStatusCopyWithImpl;
+@useResult
+$Res call({
+ String id, String status
+});
+
+
+
+
+}
+/// @nodoc
+class _$UpdateContractStatusCopyWithImpl<$Res>
+    implements $UpdateContractStatusCopyWith<$Res> {
+  _$UpdateContractStatusCopyWithImpl(this._self, this._then);
+
+  final UpdateContractStatus _self;
+  final $Res Function(UpdateContractStatus) _then;
+
+/// Create a copy of ContractEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? id = null,Object? status = null,}) {
+  return _then(UpdateContractStatus(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
 }
 
 // dart format on

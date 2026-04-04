@@ -17,5 +17,10 @@ class AppRoutes {
   static const String farmerRequests = '/farmer-requests';
   static const String farmerFinances = '/farmer-finances';
   static const String listHarvest = '/list-harvest';
+  // Trader-specific routes
+  static const String traderProducts = '/trader-products';
+  static const String addTraderProduct = 'add-product';
 
+  // Consumer-specific routes
+  static const String consumerMarket = '/consumer-market';
 }

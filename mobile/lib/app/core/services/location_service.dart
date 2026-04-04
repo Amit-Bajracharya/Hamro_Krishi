@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:geolocator/geolocator.dart';
 
 class LocationService {
@@ -15,7 +16,7 @@ class LocationService {
   /// Uses a 3-tier strategy for speed:
   ///   1. Return in-memory cached position if fresh (instant)
   ///   2. Return platform's last-known position (instant)
-  ///   3. Fetch fresh position with LOW accuracy / network-based (<1s)
+  ///   3. Fetch fresh position with LOW accuracy / network-based (<10s)
   Future<Position> getCurrentPosition() async {
     // ── Tier 1: In-memory cache (instant) ──
     if (_cachedPosition != null) {
@@ -25,25 +26,37 @@ class LocationService {
       }
     }
 
-    // ── Permission check (cached after first success) ──
-    await _ensurePermission();
+    try {
+      // ── Permission check (cached after first success) ──
+      await _ensurePermission();
 
-    // ── Tier 2: Platform last-known position (instant) ──
-    final lastKnown = await Geolocator.getLastKnownPosition();
-    if (lastKnown != null) {
-      _cachedPosition = lastKnown;
-      return lastKnown;
+      // ── Tier 3: Fresh position — LOW accuracy for speed ──
+      // We try this FIRST now if we want fresh data, but with a shortcut
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.low, // network-based, <1s usually
+          timeLimit: Duration(seconds: 10), // Increased from 5 to 10
+        ),
+      );
+      _cachedPosition = position;
+      return position;
+    } on TimeoutException {
+      // ── Tier 2: Fallback to Platform last-known position ──
+      final lastKnown = await Geolocator.getLastKnownPosition();
+      if (lastKnown != null) {
+        _cachedPosition = lastKnown;
+        return lastKnown;
+      }
+      return Future.error('Location timeout. Please ensure GPS is on and you are not indoors.');
+    } catch (e) {
+      // If fresh failed for other reasons, try last known as a last resort
+      final lastKnown = await Geolocator.getLastKnownPosition();
+      if (lastKnown != null) {
+        _cachedPosition = lastKnown;
+        return lastKnown;
+      }
+      rethrow;
     }
-
-    // ── Tier 3: Fresh position — LOW accuracy for speed ──
-    final position = await Geolocator.getCurrentPosition(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.low, // network-based, <1s
-        timeLimit: Duration(seconds: 5),
-      ),
-    );
-    _cachedPosition = position;
-    return position;
   }
 
   /// Checks service + permission only once per session.
@@ -54,7 +67,7 @@ class LocationService {
     // Check if location services are enabled
     final serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      return Future.error('Location services are disabled.');
+      return Future.error('GPS is disabled. Please enable location services in settings.');
     }
 
     // Check & request permission
@@ -62,13 +75,13 @@ class LocationService {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        return Future.error('Location permissions are denied');
+        return Future.error('Location permissions are denied. We need this to verify your farm/shop location.');
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
       return Future.error(
-        'Location permissions are permanently denied, we cannot request permissions.',
+        'Location permissions are permanently denied. Please enable them in app settings.',
       );
     }
 
