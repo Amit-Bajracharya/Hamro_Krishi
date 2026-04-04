@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hamrokrishi_app/app/core/di/injection_container.dart';
@@ -10,6 +9,7 @@ import 'package:hamrokrishi_app/app/features/auth/presentation/pages/farmer_regi
 import 'package:hamrokrishi_app/app/features/auth/presentation/pages/trader_register_screen.dart';
 import 'package:hamrokrishi_app/app/features/auth/presentation/pages/consumer_register_screen.dart';
 import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/login_bloc.dart';
+import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/register_farmer_bloc.dart';
 import 'package:hamrokrishi_app/app/routes/route_constants.dart';
 
 final GoRouter router = GoRouter(
@@ -32,7 +32,10 @@ final GoRouter router = GoRouter(
     ),
     GoRoute(
       path: AppRoutes.farmerRegister,
-      builder: (context, state) => const FarmerRegisterScreen(),
+      builder: (context, state) => BlocProvider(
+        create: (context) => sl<RegisterFarmerBloc>(),
+        child: const FarmerRegisterScreen(),
+      ),
     ),
     GoRoute(
       path: AppRoutes.traderRegister,

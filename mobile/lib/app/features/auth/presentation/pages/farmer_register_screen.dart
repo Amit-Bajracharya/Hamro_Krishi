@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/register_farmer_bloc.dart';
+import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/register_farmer_event.dart';
+import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/register_farmer_state.dart';
 import 'package:hamrokrishi_app/app/routes/route_constants.dart';
 
 class FarmerRegisterScreen extends StatefulWidget {
@@ -11,14 +15,21 @@ class FarmerRegisterScreen extends StatefulWidget {
 }
 
 class _FarmerRegisterScreenState extends State<FarmerRegisterScreen> {
-  final TextEditingController _identityController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  bool _isPasswordHidden = true;
+  final TextEditingController _latitudeController = TextEditingController();
+  final TextEditingController _longitudeController = TextEditingController();
 
   @override
   void dispose() {
-    _identityController.dispose();
+    _nameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
     _passwordController.dispose();
+    _latitudeController.dispose();
+    _longitudeController.dispose();
     super.dispose();
   }
 
@@ -120,31 +131,76 @@ class _FarmerRegisterScreenState extends State<FarmerRegisterScreen> {
           _buildInputLabel('Full Name'),
           SizedBox(height: 8.h),
           _buildTextField(
-            controller: TextEditingController(),
+            controller: _nameController,
             hint: 'Your Name',
             icon: Icons.person_outline,
           ),
-          SizedBox(height: 24.h),
-          _buildInputLabel('Email or Phone'),
+          SizedBox(height: 16.h),
+          _buildInputLabel('Email Address'),
           SizedBox(height: 8.h),
           _buildTextField(
-            controller: _identityController,
-            hint: 'Phone or email address',
-            icon: Icons.contact_mail_outlined,
+            controller: _emailController,
+            hint: 'your.email@example.com',
+            icon: Icons.email_outlined,
           ),
-          SizedBox(height: 24.h),
+          SizedBox(height: 16.h),
+          _buildInputLabel('Phone Number'),
+          SizedBox(height: 8.h),
+          _buildTextField(
+            controller: _phoneController,
+            hint: 'e.g. +977 9800000000',
+            icon: Icons.phone_outlined,
+          ),
+          SizedBox(height: 16.h),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildInputLabel('Latitude'),
+                    SizedBox(height: 8.h),
+                    _buildTextField(
+                      controller: _latitudeController,
+                      hint: '27.7172',
+                      icon: Icons.location_on_outlined,
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(width: 16.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildInputLabel('Longitude'),
+                    SizedBox(height: 8.h),
+                    _buildTextField(
+                      controller: _longitudeController,
+                      hint: '85.3240',
+                      icon: Icons.location_on_outlined,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 16.h),
           _buildInputLabel('Password'),
           SizedBox(height: 8.h),
-          _buildTextField(
-            controller: _passwordController,
-            hint: '••••••••',
-            icon: Icons.lock_outline,
-            isPassword: true,
-            obscureText: _isPasswordHidden,
-            onIconTap: () {
-              setState(() {
-                _isPasswordHidden = !_isPasswordHidden;
-              });
+          BlocBuilder<RegisterFarmerBloc, RegisterFarmerState>(
+            buildWhen: (previous, current) => previous.isPasswordHidden != current.isPasswordHidden,
+            builder: (context, state) {
+              return _buildTextField(
+                controller: _passwordController,
+                hint: '••••••••',
+                icon: Icons.lock_outline,
+                isPassword: true,
+                obscureText: state.isPasswordHidden,
+                onIconTap: () {
+                  context.read<RegisterFarmerBloc>().add(const RegisterFarmerEvent.togglePasswordVisibility());
+                },
+              );
             },
           ),
           SizedBox(height: 24.h),
@@ -200,31 +256,93 @@ class _FarmerRegisterScreenState extends State<FarmerRegisterScreen> {
   }
 
   Widget _buildSubmitButton() {
-    return SizedBox(
-      width: double.infinity,
-      height: 50.h,
-      child: ElevatedButton(
-        onPressed: () {},
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF2D5A27),
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.r),
-          ),
-          elevation: 0,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Register',
-              style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold),
+    return BlocConsumer<RegisterFarmerBloc, RegisterFarmerState>(
+      listener: (context, state) {
+        state.maybeWhen(
+          success: (_) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Registered successfully! Please check your email for verification.')),
+            );
+            context.go(AppRoutes.login);
+          },
+          failure: (error, _) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(error), backgroundColor: Colors.red),
+            );
+          },
+          orElse: () {},
+        );
+      },
+      builder: (context, state) {
+        final isLoading = state is Loading;
+        return SizedBox(
+          width: double.infinity,
+          height: 50.h,
+          child: ElevatedButton(
+            onPressed: isLoading
+                ? null
+                : () {
+                    if (_nameController.text.isEmpty ||
+                        _emailController.text.isEmpty ||
+                        _passwordController.text.isEmpty ||
+                        _phoneController.text.isEmpty ||
+                        _latitudeController.text.isEmpty ||
+                        _longitudeController.text.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Please fill all fields')),
+                      );
+                      return;
+                    }
+
+                    final lat = double.tryParse(_latitudeController.text);
+                    final lng = double.tryParse(_longitudeController.text);
+
+                    if (lat == null || lng == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Invalid latitude or longitude')),
+                      );
+                      return;
+                    }
+
+                    context.read<RegisterFarmerBloc>().add(
+                          RegisterFarmerEvent.registerSubmitted(
+                            name: _nameController.text,
+                            email: _emailController.text,
+                            password: _passwordController.text,
+                            phone: _phoneController.text,
+                            latitude: lat,
+                            longitude: lng,
+                          ),
+                        );
+                  },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF2D5A27),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16.r),
+              ),
+              elevation: 0,
             ),
-            SizedBox(width: 8.w),
-            Icon(Icons.arrow_forward, size: 20.sp),
-          ],
-        ),
-      ),
+            child: isLoading
+                ? SizedBox(
+                    height: 20.h,
+                    width: 20.h,
+                    child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Register',
+                        style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(width: 8.w),
+                      Icon(Icons.arrow_forward, size: 20.sp),
+                    ],
+                  ),
+          ),
+        );
+      },
     );
   }
 
