@@ -6,4 +6,13 @@ abstract class AuthRepository {
     required String identity,
     required String password,
   });
+
+  Future<Either<String, void>> registerFarmer({
+    required String name,
+    required String email,
+    required String password,
+    required String phone,
+    required double latitude,
+    required double longitude,
+  });
 }
