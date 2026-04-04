@@ -21,6 +21,7 @@ _ProductEntity _$ProductEntityFromJson(Map<String, dynamic> json) =>
       latitude: (json['latitude'] as num).toDouble(),
       longitude: (json['longitude'] as num).toDouble(),
       imageUrl: json['imageUrl'] as String?,
+      farmerName: json['farmerName'] as String?,
       createdAt: json['createdAt'] == null
           ? null
           : DateTime.parse(json['createdAt'] as String),
@@ -39,5 +40,6 @@ Map<String, dynamic> _$ProductEntityToJson(_ProductEntity instance) =>
       'latitude': instance.latitude,
       'longitude': instance.longitude,
       'imageUrl': instance.imageUrl,
+      'farmerName': instance.farmerName,
       'createdAt': instance.createdAt?.toIso8601String(),
     };

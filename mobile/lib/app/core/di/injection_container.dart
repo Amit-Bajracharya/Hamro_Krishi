@@ -17,7 +17,23 @@ import 'package:hamrokrishi_app/app/features/product/data/datasources/product_re
 import 'package:hamrokrishi_app/app/features/product/data/repositories/product_repository_impl.dart';
 import 'package:hamrokrishi_app/app/features/product/domain/repositories/product_repository.dart';
 import 'package:hamrokrishi_app/app/features/product/domain/usecases/add_product_use_case.dart';
+import 'package:hamrokrishi_app/app/features/product/domain/usecases/get_farmer_products_use_case.dart';
 import 'package:hamrokrishi_app/app/features/product/presentation/bloc/product_bloc.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/data/datasources/weather_remote_data_source.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/data/repositories/weather_repository_impl.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/domain/repositories/weather_repository.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/domain/usecases/get_weather_use_case.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/weather_bloc.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/data/datasources/prediction_remote_data_source.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/data/repositories/prediction_repository_impl.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/domain/repositories/prediction_repository.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/domain/usecases/get_prediction_use_case.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/prediction_bloc.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/data/datasources/farmer_remote_data_source.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/data/repositories/farmer_repository_impl.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/domain/repositories/farmer_repository.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/trader_dashboard_bloc.dart';
+import 'package:hamrokrishi_app/app/features/market/presentation/bloc/trader_market_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final sl = GetIt.instance;
@@ -32,7 +48,21 @@ Future<void> init() async {
   sl.registerFactory(() => RegisterConsumerBloc(registerConsumerUseCase: sl(), locationService: sl()));
   
   // Features - Product
-  sl.registerFactory(() => ProductBloc(addProductUseCase: sl()));
+  sl.registerFactory(() => ProductBloc(
+        addProductUseCase: sl(),
+        getFarmerProductsUseCase: sl(),
+      ));
+  
+  sl.registerFactory(() => WeatherBloc(getWeatherUseCase: sl()));
+  sl.registerFactory(() => PredictionBloc(getPredictionUseCase: sl()));
+  sl.registerFactory(() => TraderDashboardBloc(
+        farmerRepository: sl(),
+        productRepository: sl(),
+      ));
+  sl.registerFactory(() => TraderMarketBloc(
+        farmerRepository: sl(),
+        productRepository: sl(),
+      ));
   
   // Use cases
   sl.registerLazySingleton(() => LoginUseCase(sl()));
@@ -41,6 +71,9 @@ Future<void> init() async {
   sl.registerLazySingleton(() => RegisterConsumerUseCase(sl()));
   
   sl.registerLazySingleton(() => AddProductUseCase(sl()));
+  sl.registerLazySingleton(() => GetFarmerProductsUseCase(sl()));
+  sl.registerLazySingleton(() => GetWeatherUseCase(sl()));
+  sl.registerLazySingleton(() => GetPredictionUseCase(sl()));
   
   // Repository
   sl.registerLazySingleton<AuthRepository>(
@@ -50,6 +83,18 @@ Future<void> init() async {
   sl.registerLazySingleton<IProductRepository>(
     () => ProductRepositoryImpl(remoteDataSource: sl()),
   );
+
+  sl.registerLazySingleton<IWeatherRepository>(
+    () => WeatherRepositoryImpl(remoteDataSource: sl()),
+  );
+
+  sl.registerLazySingleton<IPredictionRepository>(
+    () => PredictionRepositoryImpl(remoteDataSource: sl()),
+  );
+
+  sl.registerLazySingleton<IFarmerRepository>(
+    () => FarmerRepositoryImpl(remoteDataSource: sl()),
+  );
   
   // Data sources
   sl.registerLazySingleton<AuthRemoteDataSource>(
@@ -58,6 +103,18 @@ Future<void> init() async {
 
   sl.registerLazySingleton<IProductRemoteDataSource>(
     () => ProductRemoteDataSourceImpl(dio: sl(), supabaseClient: sl()),
+  );
+
+  sl.registerLazySingleton<IWeatherRemoteDataSource>(
+    () => WeatherRemoteDataSourceImpl(dio: sl()),
+  );
+
+  sl.registerLazySingleton<IPredictionRemoteDataSource>(
+    () => PredictionRemoteDataSourceImpl(dio: sl()),
+  );
+
+  sl.registerLazySingleton<IFarmerRemoteDataSource>(
+    () => FarmerRemoteDataSourceImpl(dio: sl()),
   );
 
   // Core

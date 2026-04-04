@@ -11,6 +11,8 @@ import 'package:hamrokrishi_app/app/features/product/presentation/pages/list_har
 import 'package:hamrokrishi_app/app/features/product/presentation/bloc/product_bloc.dart';
 
 import 'package:hamrokrishi_app/app/features/market/presentation/pages/trader_market_screen.dart';
+import 'package:hamrokrishi_app/app/features/market/presentation/bloc/trader_market_bloc.dart';
+import 'package:hamrokrishi_app/app/features/market/presentation/bloc/trader_market_event.dart';
 import 'package:hamrokrishi_app/app/features/dashboard/presentation/pages/contracts_screen.dart';
 import 'package:hamrokrishi_app/app/features/dashboard/presentation/pages/account_screen.dart';
 import 'package:hamrokrishi_app/app/features/introduction_screen/presentation/pages/introduction_screen.dart';
@@ -111,7 +113,10 @@ final GoRouter router = GoRouter(
           routes: [
             GoRoute(
               path: AppRoutes.market,
-              builder: (context, state) => const TraderMarketScreen(),
+              builder: (context, state) => BlocProvider(
+                create: (context) => sl<TraderMarketBloc>()..add(const TraderMarketEvent.fetchData()),
+                child: const TraderMarketScreen(),
+              ),
             ),
           ],
         ),
@@ -141,10 +146,13 @@ final GoRouter router = GoRouter(
           routes: [
             GoRoute(
               path: AppRoutes.farmerCrops,
-              builder: (context, state) => const FarmerCropsScreen(),
+              builder: (context, state) => BlocProvider(
+                create: (context) => sl<ProductBloc>(),
+                child: const FarmerCropsScreen(),
+              ),
               routes: [
                 GoRoute(
-                  path: 'list-harvest', // path should be relative or absolute. GoRouter handles child paths.
+                  path: 'list-harvest',
                   builder: (context, state) => BlocProvider(
                     create: (context) => sl<ProductBloc>(),
                     child: const ListHarvestScreen(),
@@ -152,7 +160,6 @@ final GoRouter router = GoRouter(
                 ),
               ],
             ),
-
           ],
         ),
         // Branch 5: Farmer Requests

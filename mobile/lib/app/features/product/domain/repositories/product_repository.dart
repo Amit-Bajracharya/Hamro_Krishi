@@ -6,4 +6,5 @@ import 'package:hamrokrishi_app/app/features/product/domain/entities/product_ent
 abstract class IProductRepository {
   Future<Either<Failure, void>> addProduct(ProductEntity product, File? imageFile);
   Future<Either<Failure, List<ProductEntity>>> getFarmerProducts(String farmerId);
+  Future<Either<Failure, List<ProductEntity>>> getAllProducts();
 }

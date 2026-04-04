@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ProductModel {
 
- String? get id; String get name; String get category; DateTime? get harvestDate; DateTime get expiryDate; double get price; double get quantity; String? get farmerId; double get latitude; double get longitude; String? get imageUrl; DateTime? get createdAt;
+ String? get id; String get name; String get category;@JsonKey(name: 'harvest_date') DateTime? get harvestDate;@JsonKey(name: 'expiry_date') DateTime get expiryDate;@DoubleConverter() double get price;@DoubleConverter() double get quantity;@JsonKey(name: 'farmer_id') String? get farmerId;@DoubleConverter() double get latitude;@DoubleConverter() double get longitude;@JsonKey(name: 'image_url') String? get imageUrl;@JsonKey(name: 'farmer_name') String? get farmerName;@JsonKey(name: 'created_at') DateTime? get createdAt;
 /// Create a copy of ProductModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $ProductModelCopyWith<ProductModel> get copyWith => _$ProductModelCopyWithImpl<P
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProductModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.category, category) || other.category == category)&&(identical(other.harvestDate, harvestDate) || other.harvestDate == harvestDate)&&(identical(other.expiryDate, expiryDate) || other.expiryDate == expiryDate)&&(identical(other.price, price) || other.price == price)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.farmerId, farmerId) || other.farmerId == farmerId)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProductModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.category, category) || other.category == category)&&(identical(other.harvestDate, harvestDate) || other.harvestDate == harvestDate)&&(identical(other.expiryDate, expiryDate) || other.expiryDate == expiryDate)&&(identical(other.price, price) || other.price == price)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.farmerId, farmerId) || other.farmerId == farmerId)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.farmerName, farmerName) || other.farmerName == farmerName)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,category,harvestDate,expiryDate,price,quantity,farmerId,latitude,longitude,imageUrl,createdAt);
+int get hashCode => Object.hash(runtimeType,id,name,category,harvestDate,expiryDate,price,quantity,farmerId,latitude,longitude,imageUrl,farmerName,createdAt);
 
 @override
 String toString() {
-  return 'ProductModel(id: $id, name: $name, category: $category, harvestDate: $harvestDate, expiryDate: $expiryDate, price: $price, quantity: $quantity, farmerId: $farmerId, latitude: $latitude, longitude: $longitude, imageUrl: $imageUrl, createdAt: $createdAt)';
+  return 'ProductModel(id: $id, name: $name, category: $category, harvestDate: $harvestDate, expiryDate: $expiryDate, price: $price, quantity: $quantity, farmerId: $farmerId, latitude: $latitude, longitude: $longitude, imageUrl: $imageUrl, farmerName: $farmerName, createdAt: $createdAt)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $ProductModelCopyWith<$Res>  {
   factory $ProductModelCopyWith(ProductModel value, $Res Function(ProductModel) _then) = _$ProductModelCopyWithImpl;
 @useResult
 $Res call({
- String? id, String name, String category, DateTime? harvestDate, DateTime expiryDate, double price, double quantity, String? farmerId, double latitude, double longitude, String? imageUrl, DateTime? createdAt
+ String? id, String name, String category,@JsonKey(name: 'harvest_date') DateTime? harvestDate,@JsonKey(name: 'expiry_date') DateTime expiryDate,@DoubleConverter() double price,@DoubleConverter() double quantity,@JsonKey(name: 'farmer_id') String? farmerId,@DoubleConverter() double latitude,@DoubleConverter() double longitude,@JsonKey(name: 'image_url') String? imageUrl,@JsonKey(name: 'farmer_name') String? farmerName,@JsonKey(name: 'created_at') DateTime? createdAt
 });
 
 
@@ -65,7 +65,7 @@ class _$ProductModelCopyWithImpl<$Res>
 
 /// Create a copy of ProductModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? name = null,Object? category = null,Object? harvestDate = freezed,Object? expiryDate = null,Object? price = null,Object? quantity = null,Object? farmerId = freezed,Object? latitude = null,Object? longitude = null,Object? imageUrl = freezed,Object? createdAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? name = null,Object? category = null,Object? harvestDate = freezed,Object? expiryDate = null,Object? price = null,Object? quantity = null,Object? farmerId = freezed,Object? latitude = null,Object? longitude = null,Object? imageUrl = freezed,Object? farmerName = freezed,Object? createdAt = freezed,}) {
   return _then(_self.copyWith(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -78,6 +78,7 @@ as double,farmerId: freezed == farmerId ? _self.farmerId : farmerId // ignore: c
 as String?,latitude: null == latitude ? _self.latitude : latitude // ignore: cast_nullable_to_non_nullable
 as double,longitude: null == longitude ? _self.longitude : longitude // ignore: cast_nullable_to_non_nullable
 as double,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
+as String?,farmerName: freezed == farmerName ? _self.farmerName : farmerName // ignore: cast_nullable_to_non_nullable
 as String?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,
   ));
@@ -164,10 +165,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? id,  String name,  String category,  DateTime? harvestDate,  DateTime expiryDate,  double price,  double quantity,  String? farmerId,  double latitude,  double longitude,  String? imageUrl,  DateTime? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? id,  String name,  String category, @JsonKey(name: 'harvest_date')  DateTime? harvestDate, @JsonKey(name: 'expiry_date')  DateTime expiryDate, @DoubleConverter()  double price, @DoubleConverter()  double quantity, @JsonKey(name: 'farmer_id')  String? farmerId, @DoubleConverter()  double latitude, @DoubleConverter()  double longitude, @JsonKey(name: 'image_url')  String? imageUrl, @JsonKey(name: 'farmer_name')  String? farmerName, @JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ProductModel() when $default != null:
-return $default(_that.id,_that.name,_that.category,_that.harvestDate,_that.expiryDate,_that.price,_that.quantity,_that.farmerId,_that.latitude,_that.longitude,_that.imageUrl,_that.createdAt);case _:
+return $default(_that.id,_that.name,_that.category,_that.harvestDate,_that.expiryDate,_that.price,_that.quantity,_that.farmerId,_that.latitude,_that.longitude,_that.imageUrl,_that.farmerName,_that.createdAt);case _:
   return orElse();
 
 }
@@ -185,10 +186,10 @@ return $default(_that.id,_that.name,_that.category,_that.harvestDate,_that.expir
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? id,  String name,  String category,  DateTime? harvestDate,  DateTime expiryDate,  double price,  double quantity,  String? farmerId,  double latitude,  double longitude,  String? imageUrl,  DateTime? createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? id,  String name,  String category, @JsonKey(name: 'harvest_date')  DateTime? harvestDate, @JsonKey(name: 'expiry_date')  DateTime expiryDate, @DoubleConverter()  double price, @DoubleConverter()  double quantity, @JsonKey(name: 'farmer_id')  String? farmerId, @DoubleConverter()  double latitude, @DoubleConverter()  double longitude, @JsonKey(name: 'image_url')  String? imageUrl, @JsonKey(name: 'farmer_name')  String? farmerName, @JsonKey(name: 'created_at')  DateTime? createdAt)  $default,) {final _that = this;
 switch (_that) {
 case _ProductModel():
-return $default(_that.id,_that.name,_that.category,_that.harvestDate,_that.expiryDate,_that.price,_that.quantity,_that.farmerId,_that.latitude,_that.longitude,_that.imageUrl,_that.createdAt);case _:
+return $default(_that.id,_that.name,_that.category,_that.harvestDate,_that.expiryDate,_that.price,_that.quantity,_that.farmerId,_that.latitude,_that.longitude,_that.imageUrl,_that.farmerName,_that.createdAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -205,10 +206,10 @@ return $default(_that.id,_that.name,_that.category,_that.harvestDate,_that.expir
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? id,  String name,  String category,  DateTime? harvestDate,  DateTime expiryDate,  double price,  double quantity,  String? farmerId,  double latitude,  double longitude,  String? imageUrl,  DateTime? createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? id,  String name,  String category, @JsonKey(name: 'harvest_date')  DateTime? harvestDate, @JsonKey(name: 'expiry_date')  DateTime expiryDate, @DoubleConverter()  double price, @DoubleConverter()  double quantity, @JsonKey(name: 'farmer_id')  String? farmerId, @DoubleConverter()  double latitude, @DoubleConverter()  double longitude, @JsonKey(name: 'image_url')  String? imageUrl, @JsonKey(name: 'farmer_name')  String? farmerName, @JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,) {final _that = this;
 switch (_that) {
 case _ProductModel() when $default != null:
-return $default(_that.id,_that.name,_that.category,_that.harvestDate,_that.expiryDate,_that.price,_that.quantity,_that.farmerId,_that.latitude,_that.longitude,_that.imageUrl,_that.createdAt);case _:
+return $default(_that.id,_that.name,_that.category,_that.harvestDate,_that.expiryDate,_that.price,_that.quantity,_that.farmerId,_that.latitude,_that.longitude,_that.imageUrl,_that.farmerName,_that.createdAt);case _:
   return null;
 
 }
@@ -217,24 +218,25 @@ return $default(_that.id,_that.name,_that.category,_that.harvestDate,_that.expir
 }
 
 /// @nodoc
+@JsonSerializable()
 
-@JsonSerializable(fieldRename: FieldRename.snake)
 class _ProductModel extends ProductModel {
-  const _ProductModel({this.id, required this.name, required this.category, this.harvestDate, required this.expiryDate, required this.price, required this.quantity, this.farmerId, required this.latitude, required this.longitude, this.imageUrl, this.createdAt}): super._();
+  const _ProductModel({this.id, required this.name, required this.category, @JsonKey(name: 'harvest_date') this.harvestDate, @JsonKey(name: 'expiry_date') required this.expiryDate, @DoubleConverter() required this.price, @DoubleConverter() required this.quantity, @JsonKey(name: 'farmer_id') this.farmerId, @DoubleConverter() required this.latitude, @DoubleConverter() required this.longitude, @JsonKey(name: 'image_url') this.imageUrl, @JsonKey(name: 'farmer_name') this.farmerName, @JsonKey(name: 'created_at') this.createdAt}): super._();
   factory _ProductModel.fromJson(Map<String, dynamic> json) => _$ProductModelFromJson(json);
 
 @override final  String? id;
 @override final  String name;
 @override final  String category;
-@override final  DateTime? harvestDate;
-@override final  DateTime expiryDate;
-@override final  double price;
-@override final  double quantity;
-@override final  String? farmerId;
-@override final  double latitude;
-@override final  double longitude;
-@override final  String? imageUrl;
-@override final  DateTime? createdAt;
+@override@JsonKey(name: 'harvest_date') final  DateTime? harvestDate;
+@override@JsonKey(name: 'expiry_date') final  DateTime expiryDate;
+@override@DoubleConverter() final  double price;
+@override@DoubleConverter() final  double quantity;
+@override@JsonKey(name: 'farmer_id') final  String? farmerId;
+@override@DoubleConverter() final  double latitude;
+@override@DoubleConverter() final  double longitude;
+@override@JsonKey(name: 'image_url') final  String? imageUrl;
+@override@JsonKey(name: 'farmer_name') final  String? farmerName;
+@override@JsonKey(name: 'created_at') final  DateTime? createdAt;
 
 /// Create a copy of ProductModel
 /// with the given fields replaced by the non-null parameter values.
@@ -249,16 +251,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProductModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.category, category) || other.category == category)&&(identical(other.harvestDate, harvestDate) || other.harvestDate == harvestDate)&&(identical(other.expiryDate, expiryDate) || other.expiryDate == expiryDate)&&(identical(other.price, price) || other.price == price)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.farmerId, farmerId) || other.farmerId == farmerId)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProductModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.category, category) || other.category == category)&&(identical(other.harvestDate, harvestDate) || other.harvestDate == harvestDate)&&(identical(other.expiryDate, expiryDate) || other.expiryDate == expiryDate)&&(identical(other.price, price) || other.price == price)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.farmerId, farmerId) || other.farmerId == farmerId)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.farmerName, farmerName) || other.farmerName == farmerName)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,category,harvestDate,expiryDate,price,quantity,farmerId,latitude,longitude,imageUrl,createdAt);
+int get hashCode => Object.hash(runtimeType,id,name,category,harvestDate,expiryDate,price,quantity,farmerId,latitude,longitude,imageUrl,farmerName,createdAt);
 
 @override
 String toString() {
-  return 'ProductModel(id: $id, name: $name, category: $category, harvestDate: $harvestDate, expiryDate: $expiryDate, price: $price, quantity: $quantity, farmerId: $farmerId, latitude: $latitude, longitude: $longitude, imageUrl: $imageUrl, createdAt: $createdAt)';
+  return 'ProductModel(id: $id, name: $name, category: $category, harvestDate: $harvestDate, expiryDate: $expiryDate, price: $price, quantity: $quantity, farmerId: $farmerId, latitude: $latitude, longitude: $longitude, imageUrl: $imageUrl, farmerName: $farmerName, createdAt: $createdAt)';
 }
 
 
@@ -269,7 +271,7 @@ abstract mixin class _$ProductModelCopyWith<$Res> implements $ProductModelCopyWi
   factory _$ProductModelCopyWith(_ProductModel value, $Res Function(_ProductModel) _then) = __$ProductModelCopyWithImpl;
 @override @useResult
 $Res call({
- String? id, String name, String category, DateTime? harvestDate, DateTime expiryDate, double price, double quantity, String? farmerId, double latitude, double longitude, String? imageUrl, DateTime? createdAt
+ String? id, String name, String category,@JsonKey(name: 'harvest_date') DateTime? harvestDate,@JsonKey(name: 'expiry_date') DateTime expiryDate,@DoubleConverter() double price,@DoubleConverter() double quantity,@JsonKey(name: 'farmer_id') String? farmerId,@DoubleConverter() double latitude,@DoubleConverter() double longitude,@JsonKey(name: 'image_url') String? imageUrl,@JsonKey(name: 'farmer_name') String? farmerName,@JsonKey(name: 'created_at') DateTime? createdAt
 });
 
 
@@ -286,7 +288,7 @@ class __$ProductModelCopyWithImpl<$Res>
 
 /// Create a copy of ProductModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? name = null,Object? category = null,Object? harvestDate = freezed,Object? expiryDate = null,Object? price = null,Object? quantity = null,Object? farmerId = freezed,Object? latitude = null,Object? longitude = null,Object? imageUrl = freezed,Object? createdAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? name = null,Object? category = null,Object? harvestDate = freezed,Object? expiryDate = null,Object? price = null,Object? quantity = null,Object? farmerId = freezed,Object? latitude = null,Object? longitude = null,Object? imageUrl = freezed,Object? farmerName = freezed,Object? createdAt = freezed,}) {
   return _then(_ProductModel(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -299,6 +301,7 @@ as double,farmerId: freezed == farmerId ? _self.farmerId : farmerId // ignore: c
 as String?,latitude: null == latitude ? _self.latitude : latitude // ignore: cast_nullable_to_non_nullable
 as double,longitude: null == longitude ? _self.longitude : longitude // ignore: cast_nullable_to_non_nullable
 as double,imageUrl: freezed == imageUrl ? _self.imageUrl : imageUrl // ignore: cast_nullable_to_non_nullable
+as String?,farmerName: freezed == farmerName ? _self.farmerName : farmerName // ignore: cast_nullable_to_non_nullable
 as String?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,
   ));

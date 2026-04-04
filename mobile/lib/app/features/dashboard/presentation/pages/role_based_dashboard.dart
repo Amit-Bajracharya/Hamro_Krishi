@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/login_bloc.dart';
 import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/login_state.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/prediction_bloc.dart';
 import 'package:hamrokrishi_app/app/features/dashboard/presentation/pages/farmer_dashboard.dart';
 import 'package:hamrokrishi_app/app/features/dashboard/presentation/pages/trader_dashboard.dart';
 import 'package:hamrokrishi_app/app/features/dashboard/presentation/pages/consumer_dashboard.dart';
+import 'package:hamrokrishi_app/app/core/di/injection_container.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/weather_bloc.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/trader_dashboard_bloc.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/trader_dashboard_event.dart';
 
 class RoleBasedDashboard extends StatelessWidget {
   const RoleBasedDashboard({super.key});
@@ -23,12 +28,20 @@ class RoleBasedDashboard extends StatelessWidget {
 
         switch (role) {
           case 'farmer':
-            return const FarmerDashboard();
+            return MultiBlocProvider(
+              providers: [
+                BlocProvider(create: (context) => sl<WeatherBloc>()),
+                BlocProvider(create: (context) => sl<PredictionBloc>()),
+              ],
+              child: const FarmerDashboard(),
+            );
           case 'middlemen':
           case 'trader':
-            return const TraderDashboard();
           case 'middleman':
-            return const TraderDashboard();
+            return BlocProvider(
+              create: (context) => sl<TraderDashboardBloc>()..add(const TraderDashboardEvent.fetchData()),
+              child:  TraderDashboard(),
+            );
           case 'consumer':
             return const ConsumerDashboard();
           default:

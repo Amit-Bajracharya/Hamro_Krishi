@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hamrokrishi_app/app/features/product/domain/entities/product_entity.dart';
+import 'package:hamrokrishi_app/app/features/product/data/models/double_converter.dart';
 
 part 'product_model.freezed.dart';
 part 'product_model.g.dart';
@@ -7,20 +8,21 @@ part 'product_model.g.dart';
 @freezed
 abstract class ProductModel with _$ProductModel {
   const ProductModel._();
-  @JsonSerializable(fieldRename: FieldRename.snake)
+
   const factory ProductModel({
     String? id,
     required String name,
     required String category,
-    DateTime? harvestDate,
-    required DateTime expiryDate,
-    required double price,
-    required double quantity,
-    String? farmerId,
-    required double latitude,
-    required double longitude,
-    String? imageUrl,
-    DateTime? createdAt,
+    @JsonKey(name: 'harvest_date') DateTime? harvestDate,
+    @JsonKey(name: 'expiry_date') required DateTime expiryDate,
+    @DoubleConverter() required double price,
+    @DoubleConverter() required double quantity,
+    @JsonKey(name: 'farmer_id') String? farmerId,
+    @DoubleConverter() required double latitude,
+    @DoubleConverter() required double longitude,
+    @JsonKey(name: 'image_url') String? imageUrl,
+    @JsonKey(name: 'farmer_name') String? farmerName,
+    @JsonKey(name: 'created_at') DateTime? createdAt,
   }) = _ProductModel;
 
   factory ProductModel.fromJson(Map<String, dynamic> json) => _$ProductModelFromJson(json);
@@ -38,6 +40,7 @@ abstract class ProductModel with _$ProductModel {
       latitude: entity.latitude,
       longitude: entity.longitude,
       imageUrl: entity.imageUrl,
+      farmerName: entity.farmerName,
       createdAt: entity.createdAt,
     );
   }
@@ -55,6 +58,7 @@ abstract class ProductModel with _$ProductModel {
       latitude: latitude,
       longitude: longitude,
       imageUrl: imageUrl,
+      farmerName: farmerName,
       createdAt: createdAt,
     );
   }

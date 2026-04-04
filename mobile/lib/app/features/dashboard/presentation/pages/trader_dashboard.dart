@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/login_bloc.dart';
+import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/login_state.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/trader_dashboard_bloc.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/trader_dashboard_state.dart';
+import 'package:hamrokrishi_app/app/features/product/domain/entities/product_entity.dart';
 
 class TraderDashboard extends StatelessWidget {
   const TraderDashboard({super.key});
@@ -9,28 +15,41 @@ class TraderDashboard extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAF7),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: 24.h),
-              _buildHeader(),
-              SizedBox(height: 32.h),
-              _buildStatsCards(),
-              SizedBox(height: 32.h),
-              _buildContractsSection(),
-              SizedBox(height: 32.h),
-              _buildOpportunitiesSection(),
-              SizedBox(height: 100.h), // Space for bottom navigation
-            ],
-          ),
+        child: BlocBuilder<TraderDashboardBloc, TraderDashboardState>(
+          builder: (context, state) {
+            return state.when(
+              initial: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (message) => Center(child: Text('Error: $message')),
+              loaded: (farmerCount, products) => SingleChildScrollView(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 24.h),
+                    _buildHeader(context),
+                    SizedBox(height: 32.h),
+                    _buildStatsCards(farmerCount),
+                    SizedBox(height: 32.h),
+                    _buildContractsSection(),
+                    SizedBox(height: 32.h),
+                    _buildOpportunitiesSection(products),
+                    SizedBox(height: 100.h), // Space for bottom navigation
+                  ],
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
+    final userName = context.read<LoginBloc>().state.maybeWhen(
+          success: (user, _) => user.name,
+          orElse: () => 'Trader',
+        );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -45,7 +64,7 @@ class TraderDashboard extends StatelessWidget {
         ),
         SizedBox(height: 8.h),
         Text(
-          'Good morning, Alex',
+          'Good morning, $userName',
           style: TextStyle(
             fontSize: 24.sp,
             fontWeight: FontWeight.w900,
@@ -57,17 +76,17 @@ class TraderDashboard extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsCards() {
+  Widget _buildStatsCards(int farmerCount) {
     return Column(
       children: [
-        _buildActiveFarmersCard(),
+        _buildActiveFarmersCard(farmerCount),
         SizedBox(height: 16.h),
         _buildInventoryCard(),
       ],
     );
   }
 
-  Widget _buildActiveFarmersCard() {
+  Widget _buildActiveFarmersCard(int count) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(24.w),
@@ -114,7 +133,7 @@ class TraderDashboard extends StatelessWidget {
           ),
           SizedBox(height: 8.h),
           Text(
-            '1,248',
+            count.toString(),
             style: TextStyle(
               fontSize: 32.sp,
               fontWeight: FontWeight.w900,
@@ -279,7 +298,7 @@ class TraderDashboard extends StatelessWidget {
     );
   }
 
-  Widget _buildOpportunitiesSection() {
+  Widget _buildOpportunitiesSection(List<ProductEntity> products) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -292,33 +311,26 @@ class TraderDashboard extends StatelessWidget {
           ),
         ),
         SizedBox(height: 16.h),
-        _buildOpportunityCard(
-          'Premium Heirloom Wheat',
-          'High-value specialty crop',
-          'assets/images/wheat.png',
-          const Color(0xFF2D5A27),
-        ),
-        SizedBox(height: 12.h),
-        _buildOpportunityCard(
-          'Non-GMO Soybeans',
-          'Organic market demand',
-          'assets/images/soybeans.png',
-          const Color(0xFF4A7C59),
-        ),
-        SizedBox(height: 12.h),
-        _buildOpportunityCard(
-          'Oil-Seed Sunflowers',
-          'Industrial oil production',
-          'assets/images/sunflowers.png',
-          const Color(0xFF6B8E5A),
-        ),
-        SizedBox(height: 12.h),
-        _buildOpportunityCard(
-          'Malting Barley',
-          'Brewery partnerships',
-          'assets/images/barley.png',
-          const Color(0xFF8FAF7C),
-        ),
+        if (products.isEmpty)
+          Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 20.h),
+              child: Text(
+                'No crops available for exploration yet.',
+                style: TextStyle(color: Colors.grey[600], fontSize: 14.sp),
+              ),
+            ),
+          )
+        else
+          ...products.map((product) => Padding(
+                padding: EdgeInsets.only(bottom: 12.h),
+                child: _buildOpportunityCard(
+                  product.name,
+                  'From ${product.farmerName ?? "Unknown Farmer"}',
+                  product.imageUrl,
+                  const Color(0xFF2D5A27),
+                ),
+              )),
       ],
     );
   }
@@ -326,7 +338,7 @@ class TraderDashboard extends StatelessWidget {
   Widget _buildOpportunityCard(
     String title,
     String description,
-    String image,
+    String? image,
     Color color,
   ) {
     return Container(
@@ -343,8 +355,14 @@ class TraderDashboard extends StatelessWidget {
             decoration: BoxDecoration(
               color: color.withOpacity(0.2),
               borderRadius: BorderRadius.circular(12.r),
+              image: image != null
+                  ? DecorationImage(
+                      image: NetworkImage(image),
+                      fit: BoxFit.cover,
+                    )
+                  : null,
             ),
-            child: Icon(Icons.eco, color: color, size: 24.sp),
+            child: image == null ? Icon(Icons.eco, color: color, size: 24.sp) : null,
           ),
           SizedBox(width: 16.w),
           Expanded(

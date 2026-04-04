@@ -17,6 +17,7 @@ abstract class ProductEntity with _$ProductEntity {
     required double latitude,
     required double longitude,
     String? imageUrl,
+    String? farmerName,
     DateTime? createdAt,
   }) = _ProductEntity;
 

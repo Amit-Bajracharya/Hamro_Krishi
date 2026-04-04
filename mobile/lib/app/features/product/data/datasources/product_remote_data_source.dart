@@ -8,6 +8,7 @@ abstract class IProductRemoteDataSource {
   Future<String?> uploadImage(File file);
   Future<void> addProduct(ProductModel product);
   Future<List<ProductModel>> getFarmerProducts(String farmerId);
+  Future<List<ProductModel>> getAllProducts();
 }
 
 class ProductRemoteDataSourceImpl implements IProductRemoteDataSource {
@@ -64,6 +65,22 @@ class ProductRemoteDataSourceImpl implements IProductRemoteDataSource {
       }
     } on DioException catch (e) {
       throw Exception(e.response?.data['error'] ?? 'Network error while fetching products');
+    }
+  }
+
+  @override
+  Future<List<ProductModel>> getAllProducts() async {
+    try {
+      final response = await dio.get(ApiConstants.products);
+
+      if (response.statusCode == 200) {
+        final List data = response.data['data'];
+        return data.map((json) => ProductModel.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to fetch all products');
+      }
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['error'] ?? 'Network error while fetching all products');
     }
   }
 }

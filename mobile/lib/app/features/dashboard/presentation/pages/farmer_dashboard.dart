@@ -1,8 +1,51 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/domain/entities/weather.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/weather_bloc.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/weather_event.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/weather_state.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/prediction_bloc.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/prediction_event.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/bloc/prediction_state.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/domain/entities/prediction.dart';
 
-class FarmerDashboard extends StatelessWidget {
+class FarmerDashboard extends StatefulWidget {
   const FarmerDashboard({super.key});
+
+  @override
+  State<FarmerDashboard> createState() => _FarmerDashboardState();
+}
+
+class _FarmerDashboardState extends State<FarmerDashboard> {
+  @override
+  void initState() {
+    super.initState();
+    _fetchWeather();
+  }
+
+  void _fetchWeather() async {
+    // Kathmandu, Nepal coordinates
+    const double ktmLat = 27.7172, ktmLon = 85.3240;
+    
+    if (mounted) {
+      context.read<WeatherBloc>().add(const WeatherEvent.fetchWeather(
+            latitude: ktmLat,
+            longitude: ktmLon,
+          ));
+      
+      // Fetch demand prediction for Tomato by default
+      context.read<PredictionBloc>().add(const PredictionEvent.fetchPrediction(
+            productName: 'Tomato',
+          ));
+    }
+  }
+
+  void _fetchPrediction(String product) {
+    context.read<PredictionBloc>().add(PredictionEvent.fetchPrediction(
+          productName: product,
+        ));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,6 +61,8 @@ class FarmerDashboard extends StatelessWidget {
               _buildHeader(),
               SizedBox(height: 32.h),
               _buildWeatherSection(),
+              SizedBox(height: 32.h),
+              _buildPredictionSection(),
               SizedBox(height: 32.h),
               _buildStatsCards(),
               SizedBox(height: 32.h),
@@ -49,7 +94,7 @@ class FarmerDashboard extends StatelessWidget {
         ),
         SizedBox(height: 8.h),
         Text(
-          'Good morning, Ram',
+          'Good morning !!',
           style: TextStyle(
             fontSize: 24.sp,
             fontWeight: FontWeight.w900,
@@ -70,12 +115,67 @@ class FarmerDashboard extends StatelessWidget {
   }
 
   Widget _buildWeatherSection() {
+    return BlocBuilder<WeatherBloc, WeatherState>(
+      builder: (context, state) {
+        return state.when(
+          initial: () => _buildWeatherContainer(child: const Center(child: CircularProgressIndicator(color: Colors.white))),
+          loading: () => _buildWeatherContainer(child: const Center(child: CircularProgressIndicator(color: Colors.white))),
+          error: (message) => _buildWeatherContainer(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, color: Colors.white, size: 32),
+                  SizedBox(height: 8.h),
+                  Text(
+                    'Failed to load weather',
+                    style: TextStyle(color: Colors.white, fontSize: 14.sp),
+                  ),
+                  TextButton(
+                    onPressed: _fetchWeather,
+                    child: const Text('Retry', style: TextStyle(color: Colors.white)),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          loaded: (weather) => _buildWeatherContent(weather),
+        );
+      },
+    );
+  }
+
+  Widget _buildWeatherContainer({required Widget child}) {
+    return Container(
+      width: double.infinity,
+      height: 200.h,
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF87CEEB), Color(0xFF4A90E2)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
+
+  Widget _buildWeatherContent(Weather weather) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [const Color(0xFF87CEEB), const Color(0xFF4A90E2)],
+        gradient: const LinearGradient(
+          colors: [Color(0xFF87CEEB), Color(0xFF4A90E2)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -93,18 +193,38 @@ class FarmerDashboard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.wb_sunny, color: Colors.white, size: 24.sp),
+              Image.network(
+                'https://openweathermap.org/img/wn/${weather.icon}@2x.png',
+                width: 24.sp,
+                height: 24.sp,
+                errorBuilder: (context, error, stackTrace) => Icon(Icons.wb_sunny, color: Colors.white, size: 24.sp),
+              ),
               SizedBox(width: 12.w),
-              Text(
-                'Today\'s Weather',
-                style: TextStyle(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Today\'s Weather',
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  Text(
+                    'Kathmandu, Nepal',
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: Colors.white.withOpacity(0.8),
+                    ),
+                  ),
+                ],
               ),
               const Spacer(),
-              Icon(Icons.refresh, color: Colors.white.withOpacity(0.8), size: 20.sp),
+              GestureDetector(
+                onTap: _fetchWeather,
+                child: Icon(Icons.refresh, color: Colors.white.withOpacity(0.8), size: 20.sp),
+              ),
             ],
           ),
           SizedBox(height: 20.h),
@@ -114,7 +234,7 @@ class FarmerDashboard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '28°C',
+                    '${weather.temperature.toStringAsFixed(0)}°C',
                     style: TextStyle(
                       fontSize: 48.sp,
                       fontWeight: FontWeight.w900,
@@ -123,7 +243,7 @@ class FarmerDashboard extends StatelessWidget {
                   ),
                   SizedBox(height: 4.h),
                   Text(
-                    'Partly Cloudy',
+                    weather.condition.toUpperCase(),
                     style: TextStyle(
                       fontSize: 14.sp,
                       color: Colors.white.withOpacity(0.9),
@@ -135,11 +255,11 @@ class FarmerDashboard extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  _buildWeatherDetail('Humidity', '65%'),
+                  _buildWeatherDetail('Humidity', '${weather.humidity}%'),
                   SizedBox(height: 8.h),
-                  _buildWeatherDetail('Wind', '12 km/h'),
+                  _buildWeatherDetail('Wind', '${weather.windSpeed.toStringAsFixed(1)} km/h'),
                   SizedBox(height: 8.h),
-                  _buildWeatherDetail('Rain', '20%'),
+                  _buildWeatherDetail('Rain', '${weather.rainProbability}%'),
                 ],
               ),
             ],
@@ -156,7 +276,9 @@ class FarmerDashboard extends StatelessWidget {
                 Icon(Icons.agriculture, color: Colors.white, size: 20.sp),
                 SizedBox(width: 8.w),
                 Text(
-                  'Good conditions for farming today',
+                  weather.temperature > 15 && weather.temperature < 35 
+                      ? 'Good conditions for farming today'
+                      : 'Be careful with the weather today',
                   style: TextStyle(
                     fontSize: 12.sp,
                     fontWeight: FontWeight.w600,
@@ -172,6 +294,203 @@ class FarmerDashboard extends StatelessWidget {
   }
 
   Widget _buildWeatherDetail(String label, String value) {
+    return Row(
+      children: [
+        Text(
+          '$label: ',
+          style: TextStyle(
+            fontSize: 12.sp,
+            color: Colors.white.withOpacity(0.8),
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 12.sp,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPredictionSection() {
+    return BlocBuilder<PredictionBloc, PredictionState>(
+      builder: (context, state) {
+        return state.when(
+          initial: () => _buildPredictionContainer(child: const Center(child: CircularProgressIndicator(color: Colors.white))),
+          loading: () => _buildPredictionContainer(child: const Center(child: CircularProgressIndicator(color: Colors.white))),
+          error: (message) => _buildPredictionContainer(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.analytics_outlined, color: Colors.white, size: 32),
+                  SizedBox(height: 8.h),
+                  Text(
+                    'Failed to load prediction',
+                    style: TextStyle(color: Colors.white, fontSize: 14.sp),
+                  ),
+                  TextButton(
+                    onPressed: () => _fetchPrediction('Tomato'),
+                    child: const Text('Retry', style: TextStyle(color: Colors.white)),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          loaded: (prediction) => _buildPredictionContent(prediction),
+        );
+      },
+    );
+  }
+
+  Widget _buildPredictionContainer({required Widget child}) {
+    return Container(
+      width: double.infinity,
+      height: 200.h,
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF008080), Color(0xFF20B2AA)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
+
+  Widget _buildPredictionContent(Prediction prediction) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF008080), Color(0xFF20B2AA)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.auto_awesome, color: Colors.white, size: 24.sp),
+              SizedBox(width: 12.w),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Market Prediction',
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  Text(
+                    prediction.productName,
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: Colors.white.withOpacity(0.8),
+                    ),
+                  ),
+                ],
+              ),
+              const Spacer(),
+              GestureDetector(
+                onTap: () => _fetchPrediction(prediction.productName),
+                child: Icon(Icons.refresh, color: Colors.white.withOpacity(0.8), size: 20.sp),
+              ),
+            ],
+          ),
+          SizedBox(height: 16.h),
+          Row(
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    prediction.demandLevel.toUpperCase(),
+                    style: TextStyle(
+                      fontSize: 32.sp,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    'DEMAND LEVEL',
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                       fontWeight: FontWeight.w600,
+                      color: Colors.white.withOpacity(0.8),
+                    ),
+                  ),
+                ],
+              ),
+              const Spacer(),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  _buildPredictionDetail('Trend', prediction.estimatedPriceTrend),
+                  SizedBox(height: 8.h),
+                  _buildPredictionDetail('Status', 'AI Analyzed'),
+                ],
+              ),
+            ],
+          ),
+          SizedBox(height: 16.h),
+          Container(
+            padding: EdgeInsets.all(12.w),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.lightbulb_outline, color: Colors.white, size: 18.sp),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: Text(
+                    prediction.reasoning,
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPredictionDetail(String label, String value) {
     return Row(
       children: [
         Text(

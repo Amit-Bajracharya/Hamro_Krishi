@@ -55,12 +55,13 @@ extension ProductEventPatterns on ProductEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( PickImageEvent value)?  pickImage,TResult Function( SubmitHarvestEvent value)?  submitHarvest,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( PickImageEvent value)?  pickImage,TResult Function( SubmitHarvestEvent value)?  submitHarvest,TResult Function( FetchFarmerProductsEvent value)?  fetchFarmerProducts,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case PickImageEvent() when pickImage != null:
 return pickImage(_that);case SubmitHarvestEvent() when submitHarvest != null:
-return submitHarvest(_that);case _:
+return submitHarvest(_that);case FetchFarmerProductsEvent() when fetchFarmerProducts != null:
+return fetchFarmerProducts(_that);case _:
   return orElse();
 
 }
@@ -78,12 +79,13 @@ return submitHarvest(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( PickImageEvent value)  pickImage,required TResult Function( SubmitHarvestEvent value)  submitHarvest,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( PickImageEvent value)  pickImage,required TResult Function( SubmitHarvestEvent value)  submitHarvest,required TResult Function( FetchFarmerProductsEvent value)  fetchFarmerProducts,}){
 final _that = this;
 switch (_that) {
 case PickImageEvent():
 return pickImage(_that);case SubmitHarvestEvent():
-return submitHarvest(_that);case _:
+return submitHarvest(_that);case FetchFarmerProductsEvent():
+return fetchFarmerProducts(_that);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -100,12 +102,13 @@ return submitHarvest(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( PickImageEvent value)?  pickImage,TResult? Function( SubmitHarvestEvent value)?  submitHarvest,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( PickImageEvent value)?  pickImage,TResult? Function( SubmitHarvestEvent value)?  submitHarvest,TResult? Function( FetchFarmerProductsEvent value)?  fetchFarmerProducts,}){
 final _that = this;
 switch (_that) {
 case PickImageEvent() when pickImage != null:
 return pickImage(_that);case SubmitHarvestEvent() when submitHarvest != null:
-return submitHarvest(_that);case _:
+return submitHarvest(_that);case FetchFarmerProductsEvent() when fetchFarmerProducts != null:
+return fetchFarmerProducts(_that);case _:
   return null;
 
 }
@@ -122,11 +125,12 @@ return submitHarvest(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( ImageSource source)?  pickImage,TResult Function( ProductEntity product)?  submitHarvest,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( ImageSource source)?  pickImage,TResult Function( ProductEntity product)?  submitHarvest,TResult Function( String farmerId)?  fetchFarmerProducts,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case PickImageEvent() when pickImage != null:
 return pickImage(_that.source);case SubmitHarvestEvent() when submitHarvest != null:
-return submitHarvest(_that.product);case _:
+return submitHarvest(_that.product);case FetchFarmerProductsEvent() when fetchFarmerProducts != null:
+return fetchFarmerProducts(_that.farmerId);case _:
   return orElse();
 
 }
@@ -144,11 +148,12 @@ return submitHarvest(_that.product);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( ImageSource source)  pickImage,required TResult Function( ProductEntity product)  submitHarvest,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( ImageSource source)  pickImage,required TResult Function( ProductEntity product)  submitHarvest,required TResult Function( String farmerId)  fetchFarmerProducts,}) {final _that = this;
 switch (_that) {
 case PickImageEvent():
 return pickImage(_that.source);case SubmitHarvestEvent():
-return submitHarvest(_that.product);case _:
+return submitHarvest(_that.product);case FetchFarmerProductsEvent():
+return fetchFarmerProducts(_that.farmerId);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -165,11 +170,12 @@ return submitHarvest(_that.product);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( ImageSource source)?  pickImage,TResult? Function( ProductEntity product)?  submitHarvest,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( ImageSource source)?  pickImage,TResult? Function( ProductEntity product)?  submitHarvest,TResult? Function( String farmerId)?  fetchFarmerProducts,}) {final _that = this;
 switch (_that) {
 case PickImageEvent() when pickImage != null:
 return pickImage(_that.source);case SubmitHarvestEvent() when submitHarvest != null:
-return submitHarvest(_that.product);case _:
+return submitHarvest(_that.product);case FetchFarmerProductsEvent() when fetchFarmerProducts != null:
+return fetchFarmerProducts(_that.farmerId);case _:
   return null;
 
 }
@@ -319,6 +325,72 @@ $ProductEntityCopyWith<$Res> get product {
 }
 
 /// @nodoc
+
+
+class FetchFarmerProductsEvent implements ProductEvent {
+  const FetchFarmerProductsEvent({required this.farmerId});
+  
+
+ final  String farmerId;
+
+/// Create a copy of ProductEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$FetchFarmerProductsEventCopyWith<FetchFarmerProductsEvent> get copyWith => _$FetchFarmerProductsEventCopyWithImpl<FetchFarmerProductsEvent>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FetchFarmerProductsEvent&&(identical(other.farmerId, farmerId) || other.farmerId == farmerId));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,farmerId);
+
+@override
+String toString() {
+  return 'ProductEvent.fetchFarmerProducts(farmerId: $farmerId)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $FetchFarmerProductsEventCopyWith<$Res> implements $ProductEventCopyWith<$Res> {
+  factory $FetchFarmerProductsEventCopyWith(FetchFarmerProductsEvent value, $Res Function(FetchFarmerProductsEvent) _then) = _$FetchFarmerProductsEventCopyWithImpl;
+@useResult
+$Res call({
+ String farmerId
+});
+
+
+
+
+}
+/// @nodoc
+class _$FetchFarmerProductsEventCopyWithImpl<$Res>
+    implements $FetchFarmerProductsEventCopyWith<$Res> {
+  _$FetchFarmerProductsEventCopyWithImpl(this._self, this._then);
+
+  final FetchFarmerProductsEvent _self;
+  final $Res Function(FetchFarmerProductsEvent) _then;
+
+/// Create a copy of ProductEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? farmerId = null,}) {
+  return _then(FetchFarmerProductsEvent(
+farmerId: null == farmerId ? _self.farmerId : farmerId // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+/// @nodoc
 mixin _$ProductState {
 
 
@@ -362,13 +434,14 @@ extension ProductStatePatterns on ProductState {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( Initial value)?  initial,TResult Function( Loading value)?  loading,TResult Function( Success value)?  success,TResult Function( Failure value)?  failure,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( Initial value)?  initial,TResult Function( Loading value)?  loading,TResult Function( Success value)?  success,TResult Function( Loaded value)?  loaded,TResult Function( Failure value)?  failure,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case Initial() when initial != null:
 return initial(_that);case Loading() when loading != null:
 return loading(_that);case Success() when success != null:
-return success(_that);case Failure() when failure != null:
+return success(_that);case Loaded() when loaded != null:
+return loaded(_that);case Failure() when failure != null:
 return failure(_that);case _:
   return orElse();
 
@@ -387,13 +460,14 @@ return failure(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( Initial value)  initial,required TResult Function( Loading value)  loading,required TResult Function( Success value)  success,required TResult Function( Failure value)  failure,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( Initial value)  initial,required TResult Function( Loading value)  loading,required TResult Function( Success value)  success,required TResult Function( Loaded value)  loaded,required TResult Function( Failure value)  failure,}){
 final _that = this;
 switch (_that) {
 case Initial():
 return initial(_that);case Loading():
 return loading(_that);case Success():
-return success(_that);case Failure():
+return success(_that);case Loaded():
+return loaded(_that);case Failure():
 return failure(_that);case _:
   throw StateError('Unexpected subclass');
 
@@ -411,13 +485,14 @@ return failure(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( Initial value)?  initial,TResult? Function( Loading value)?  loading,TResult? Function( Success value)?  success,TResult? Function( Failure value)?  failure,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( Initial value)?  initial,TResult? Function( Loading value)?  loading,TResult? Function( Success value)?  success,TResult? Function( Loaded value)?  loaded,TResult? Function( Failure value)?  failure,}){
 final _that = this;
 switch (_that) {
 case Initial() when initial != null:
 return initial(_that);case Loading() when loading != null:
 return loading(_that);case Success() when success != null:
-return success(_that);case Failure() when failure != null:
+return success(_that);case Loaded() when loaded != null:
+return loaded(_that);case Failure() when failure != null:
 return failure(_that);case _:
   return null;
 
@@ -435,12 +510,13 @@ return failure(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( File? imageFile)?  initial,TResult Function()?  loading,TResult Function( String message,  File? imageFile)?  success,TResult Function( String error)?  failure,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( File? imageFile)?  initial,TResult Function()?  loading,TResult Function( String message,  File? imageFile)?  success,TResult Function( List<ProductEntity> products)?  loaded,TResult Function( String error)?  failure,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case Initial() when initial != null:
 return initial(_that.imageFile);case Loading() when loading != null:
 return loading();case Success() when success != null:
-return success(_that.message,_that.imageFile);case Failure() when failure != null:
+return success(_that.message,_that.imageFile);case Loaded() when loaded != null:
+return loaded(_that.products);case Failure() when failure != null:
 return failure(_that.error);case _:
   return orElse();
 
@@ -459,12 +535,13 @@ return failure(_that.error);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( File? imageFile)  initial,required TResult Function()  loading,required TResult Function( String message,  File? imageFile)  success,required TResult Function( String error)  failure,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( File? imageFile)  initial,required TResult Function()  loading,required TResult Function( String message,  File? imageFile)  success,required TResult Function( List<ProductEntity> products)  loaded,required TResult Function( String error)  failure,}) {final _that = this;
 switch (_that) {
 case Initial():
 return initial(_that.imageFile);case Loading():
 return loading();case Success():
-return success(_that.message,_that.imageFile);case Failure():
+return success(_that.message,_that.imageFile);case Loaded():
+return loaded(_that.products);case Failure():
 return failure(_that.error);case _:
   throw StateError('Unexpected subclass');
 
@@ -482,12 +559,13 @@ return failure(_that.error);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( File? imageFile)?  initial,TResult? Function()?  loading,TResult? Function( String message,  File? imageFile)?  success,TResult? Function( String error)?  failure,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( File? imageFile)?  initial,TResult? Function()?  loading,TResult? Function( String message,  File? imageFile)?  success,TResult? Function( List<ProductEntity> products)?  loaded,TResult? Function( String error)?  failure,}) {final _that = this;
 switch (_that) {
 case Initial() when initial != null:
 return initial(_that.imageFile);case Loading() when loading != null:
 return loading();case Success() when success != null:
-return success(_that.message,_that.imageFile);case Failure() when failure != null:
+return success(_that.message,_that.imageFile);case Loaded() when loaded != null:
+return loaded(_that.products);case Failure() when failure != null:
 return failure(_that.error);case _:
   return null;
 
@@ -656,6 +734,78 @@ class _$SuccessCopyWithImpl<$Res>
 message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
 as String,imageFile: freezed == imageFile ? _self.imageFile : imageFile // ignore: cast_nullable_to_non_nullable
 as File?,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class Loaded implements ProductState {
+  const Loaded({required final  List<ProductEntity> products}): _products = products;
+  
+
+ final  List<ProductEntity> _products;
+ List<ProductEntity> get products {
+  if (_products is EqualUnmodifiableListView) return _products;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_products);
+}
+
+
+/// Create a copy of ProductState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$LoadedCopyWith<Loaded> get copyWith => _$LoadedCopyWithImpl<Loaded>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Loaded&&const DeepCollectionEquality().equals(other._products, _products));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_products));
+
+@override
+String toString() {
+  return 'ProductState.loaded(products: $products)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $LoadedCopyWith<$Res> implements $ProductStateCopyWith<$Res> {
+  factory $LoadedCopyWith(Loaded value, $Res Function(Loaded) _then) = _$LoadedCopyWithImpl;
+@useResult
+$Res call({
+ List<ProductEntity> products
+});
+
+
+
+
+}
+/// @nodoc
+class _$LoadedCopyWithImpl<$Res>
+    implements $LoadedCopyWith<$Res> {
+  _$LoadedCopyWithImpl(this._self, this._then);
+
+  final Loaded _self;
+  final $Res Function(Loaded) _then;
+
+/// Create a copy of ProductState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? products = null,}) {
+  return _then(Loaded(
+products: null == products ? _self._products : products // ignore: cast_nullable_to_non_nullable
+as List<ProductEntity>,
   ));
 }
 

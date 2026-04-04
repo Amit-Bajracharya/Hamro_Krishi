@@ -39,4 +39,15 @@ class ProductRepositoryImpl implements IProductRepository {
       return Left(ServerFailure(e.toString()));
     }
   }
+  @override
+  Future<Either<Failure, List<ProductEntity>>> getAllProducts() async {
+    try {
+      final models = await remoteDataSource.getAllProducts();
+      final entities = models.map((model) => model.toEntity()).toList();
+
+      return Right(entities);
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
 }

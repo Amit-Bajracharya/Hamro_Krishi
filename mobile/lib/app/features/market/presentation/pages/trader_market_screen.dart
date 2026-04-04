@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:hamrokrishi_app/app/features/market/presentation/bloc/trader_market_bloc.dart';
+import 'package:hamrokrishi_app/app/features/market/presentation/bloc/trader_market_event.dart';
+import 'package:hamrokrishi_app/app/features/market/presentation/bloc/trader_market_state.dart';
+import 'package:hamrokrishi_app/app/features/product/domain/entities/product_entity.dart';
 
 class TraderMarketScreen extends StatelessWidget {
   const TraderMarketScreen({super.key});
@@ -9,26 +14,40 @@ class TraderMarketScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAF7),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: 24.h),
-              _buildHeader(),
-              SizedBox(height: 32.h),
-              _buildSearchBar(),
-              SizedBox(height: 24.h),
-              _buildFilterChips(),
-              SizedBox(height: 32.h),
-              _buildMarketOverview(),
-              SizedBox(height: 32.h),
-              _buildAvailableProductsSection(),
-              SizedBox(height: 32.h),
-              _buildTrendingProductsSection(),
-              SizedBox(height: 100.h), // Space for bottom navigation
-            ],
-          ),
+        child: BlocBuilder<TraderMarketBloc, TraderMarketState>(
+          builder: (context, state) {
+            return state.when(
+              initial: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (message) => Center(child: Text('Error: $message')),
+              loaded: (farmerCount, products) => RefreshIndicator(
+                onRefresh: () async {
+                  context.read<TraderMarketBloc>().add(const TraderMarketEvent.fetchData());
+                },
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 24.h),
+                      _buildHeader(),
+                      SizedBox(height: 32.h),
+                      _buildSearchBar(),
+                      SizedBox(height: 24.h),
+                      _buildFilterChips(),
+                      SizedBox(height: 32.h),
+                      _buildMarketOverview(farmerCount, products.length),
+                      SizedBox(height: 32.h),
+                      _buildAvailableProductsSection(products),
+                      SizedBox(height: 32.h),
+                      _buildTrendingProductsSection(),
+                      SizedBox(height: 100.h), // Space for bottom navigation
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -139,7 +158,7 @@ class TraderMarketScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMarketOverview() {
+  Widget _buildMarketOverview(int farmerCount, int productCount) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(24.w),
@@ -172,11 +191,11 @@ class TraderMarketScreen extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: _buildOverviewItem('Active Farmers', '156', Colors.white),
+                child: _buildOverviewItem('Active Farmers', farmerCount.toString(), Colors.white),
               ),
               SizedBox(width: 20.w),
               Expanded(
-                child: _buildOverviewItem('Available Products', '1,247', Colors.white70),
+                child: _buildOverviewItem('Available Products', productCount.toString(), Colors.white70),
               ),
             ],
           ),
@@ -221,7 +240,7 @@ class TraderMarketScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAvailableProductsSection() {
+  Widget _buildAvailableProductsSection(List<ProductEntity> products) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -234,97 +253,145 @@ class TraderMarketScreen extends StatelessWidget {
           ),
         ),
         SizedBox(height: 16.h),
-        _buildProductCard(
-          'Organic Tomatoes',
-          'Central Valley Farms',
-          '\$3.20/kg',
-          '500 kg available',
-          const Color(0xFFFF6B6B),
-          Icons.eco,
-        ),
-        SizedBox(height: 12.h),
-        _buildProductCard(
-          'Fresh Wheat',
-          'Golden Fields Cooperative',
-          '\$2.80/kg',
-          '1,200 kg available',
-          const Color(0xFF4ECDC4),
-          Icons.grain,
-        ),
-        SizedBox(height: 12.h),
-        _buildProductCard(
-          'Premium Corn',
-          'Sunrise Farms',
-          '\$2.95/kg',
-          '750 kg available',
-          const Color(0xFFFFD93D),
-          Icons.grass,
-        ),
+        if (products.isEmpty)
+          Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 20.h),
+              child: Text(
+                'No products available in the market.',
+                style: TextStyle(color: Colors.grey[600]),
+              ),
+            ),
+          )
+        else
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 1, // Single column for large/medium cards as requested
+              mainAxisSpacing: 20.h,
+              mainAxisExtent: 320.h, // Adjusted for medium image + details
+            ),
+            itemCount: products.length,
+            itemBuilder: (context, index) {
+              final product = products[index];
+              return _buildProductCard(product);
+            },
+          ),
       ],
     );
   }
 
-  Widget _buildProductCard(
-    String productName,
-    String farmerName,
-    String price,
-    String availability,
-    Color color,
-    IconData icon,
-  ) {
+  Widget _buildProductCard(ProductEntity product) {
     return Container(
-      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.grey.withOpacity(0.1)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 60.w,
-            height: 60.w,
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Icon(icon, color: color, size: 28.sp),
+        borderRadius: BorderRadius.circular(24.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
-          SizedBox(width: 16.w),
-          Expanded(
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Image Section (Medium Size)
+          ClipRRect(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+            child: Container(
+              height: 180.h, // Medium height
+              width: double.infinity,
+              color: const Color(0xFF2D5A27).withOpacity(0.05),
+              child: product.imageUrl != null
+                  ? Image.network(
+                      product.imageUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Icon(
+                        Icons.image_not_supported_outlined,
+                        color: Colors.grey[300],
+                        size: 40.sp,
+                      ),
+                    )
+                  : Icon(
+                      Icons.eco,
+                      color: const Color(0xFF2D5A27).withOpacity(0.2),
+                      size: 50.sp,
+                    ),
+            ),
+          ),
+          // Details Section
+          Padding(
+            padding: EdgeInsets.all(20.w),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  productName,
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF1B3A1A),
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  farmerName,
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    color: Colors.grey[600],
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        product.name,
+                        style: TextStyle(
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF1B3A1A),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Text(
+                      'Rs. ${product.price.toStringAsFixed(0)}/kg',
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w800,
+                        color: const Color(0xFF2D5A27),
+                      ),
+                    ),
+                  ],
                 ),
                 SizedBox(height: 8.h),
                 Row(
                   children: [
+                    Icon(Icons.person_outline, size: 14.sp, color: Colors.grey[500]),
+                    SizedBox(width: 4.w),
                     Text(
-                      price,
+                      product.farmerName ?? 'Unknown Farmer',
                       style: TextStyle(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.bold,
-                        color: color,
+                        fontSize: 13.sp,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
-                    SizedBox(width: 12.w),
+                    const Spacer(),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE8F5E9),
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Text(
+                        '${product.quantity} kg avail.',
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF2D5A27),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 12.h),
+                // Location if available
+                Row(
+                  children: [
+                    Icon(Icons.location_on_outlined, size: 14.sp, color: Colors.grey[400]),
+                    SizedBox(width: 4.w),
                     Text(
-                      availability,
+                      'Kathmandu, Nepal', // Placeholder for now
                       style: TextStyle(
                         fontSize: 12.sp,
                         color: Colors.grey[500],
@@ -333,21 +400,6 @@ class TraderMarketScreen extends StatelessWidget {
                   ],
                 ),
               ],
-            ),
-          ),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-            decoration: BoxDecoration(
-              color: const Color(0xFF2D5A27).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Text(
-              'Contact',
-              style: TextStyle(
-                fontSize: 10.sp,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF2D5A27),
-              ),
             ),
           ),
         ],
