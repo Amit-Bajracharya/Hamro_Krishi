@@ -19,8 +19,14 @@ class _ConsumerRegisterScreenState extends State<ConsumerRegisterScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _latitudeController = TextEditingController();
-  final TextEditingController _longitudeController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<RegisterConsumerBloc>().add(const RegisterConsumerEvent.fetchLocation());
+    });
+  }
 
   @override
   void dispose() {
@@ -28,8 +34,6 @@ class _ConsumerRegisterScreenState extends State<ConsumerRegisterScreen> {
     _emailController.dispose();
     _phoneController.dispose();
     _passwordController.dispose();
-    _latitudeController.dispose();
-    _longitudeController.dispose();
     super.dispose();
   }
 
@@ -152,39 +156,8 @@ class _ConsumerRegisterScreenState extends State<ConsumerRegisterScreen> {
             icon: Icons.phone_outlined,
           ),
           SizedBox(height: 16.h),
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildInputLabel('Latitude'),
-                    SizedBox(height: 8.h),
-                    _buildTextField(
-                      controller: _latitudeController,
-                      hint: '27.7172',
-                      icon: Icons.location_on_outlined,
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(width: 16.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildInputLabel('Longitude'),
-                    SizedBox(height: 8.h),
-                    _buildTextField(
-                      controller: _longitudeController,
-                      hint: '85.3240',
-                      icon: Icons.location_on_outlined,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+          SizedBox(height: 16.h),
+          _buildLocationStatus(),
           SizedBox(height: 16.h),
           _buildInputLabel('Password'),
           SizedBox(height: 8.h),
@@ -258,13 +231,13 @@ class _ConsumerRegisterScreenState extends State<ConsumerRegisterScreen> {
     return BlocConsumer<RegisterConsumerBloc, RegisterConsumerState>(
       listener: (context, state) {
         state.maybeWhen(
-          success: (_) {
+          success: (isHidden, lat, lng, isLocLoading) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Registered successfully! Please check your email for verification.')),
             );
             context.go(AppRoutes.login);
           },
-          failure: (error, _) {
+          failure: (error, isHidden, lat, lng, isLocLoading) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(error), backgroundColor: Colors.red),
             );
@@ -281,24 +254,21 @@ class _ConsumerRegisterScreenState extends State<ConsumerRegisterScreen> {
             onPressed: isLoading
                 ? null
                 : () {
+                    final currentState = context.read<RegisterConsumerBloc>().state;
+                    
                     if (_nameController.text.isEmpty ||
                         _emailController.text.isEmpty ||
                         _passwordController.text.isEmpty ||
-                        _phoneController.text.isEmpty ||
-                        _latitudeController.text.isEmpty ||
-                        _longitudeController.text.isEmpty) {
+                        _phoneController.text.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Please fill all fields')),
                       );
                       return;
                     }
 
-                    final lat = double.tryParse(_latitudeController.text);
-                    final lng = double.tryParse(_longitudeController.text);
-
-                    if (lat == null || lng == null) {
+                    if (currentState.latitude == null || currentState.longitude == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Invalid latitude or longitude')),
+                        const SnackBar(content: Text('Please wait for location to be captured')),
                       );
                       return;
                     }
@@ -309,8 +279,8 @@ class _ConsumerRegisterScreenState extends State<ConsumerRegisterScreen> {
                             email: _emailController.text,
                             password: _passwordController.text,
                             phone: _phoneController.text,
-                            latitude: lat,
-                            longitude: lng,
+                            latitude: currentState.latitude!,
+                            longitude: currentState.longitude!,
                           ),
                         );
                   },
@@ -360,6 +330,79 @@ class _ConsumerRegisterScreenState extends State<ConsumerRegisterScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildLocationStatus() {
+    return BlocBuilder<RegisterConsumerBloc, RegisterConsumerState>(
+      buildWhen: (previous, current) => 
+          previous.isLocationLoading != current.isLocationLoading || 
+          previous.latitude != current.latitude,
+      builder: (context, state) {
+        return Container(
+          padding: EdgeInsets.all(12.w),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF5F6F2),
+            borderRadius: BorderRadius.circular(16.r),
+            border: Border.all(
+              color: state.latitude != null ? const Color(0xFF2D5A27).withValues(alpha: 0.2) : Colors.transparent,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(8.w),
+                decoration: BoxDecoration(
+                  color: state.latitude != null ? const Color(0xFF2D5A27) : Colors.grey[300],
+                  shape: BoxShape.circle,
+                ),
+                child: state.isLocationLoading
+                    ? SizedBox(
+                        width: 16.sp,
+                        height: 16.sp,
+                        child: const CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      )
+                    : Icon(
+                        state.latitude != null ? Icons.check : Icons.location_on_outlined,
+                        size: 16.sp,
+                        color: Colors.white,
+                      ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      state.latitude != null ? 'Location Captured' : 'GPS Location',
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF1B3A1A),
+                      ),
+                    ),
+                    Text(
+                      state.isLocationLoading 
+                          ? 'Fetching coordinates...' 
+                          : state.latitude != null 
+                              ? 'Lat: ${state.latitude!.toStringAsFixed(4)}, Long: ${state.longitude!.toStringAsFixed(4)}'
+                              : 'Tap to refresh location',
+                      style: TextStyle(fontSize: 11.sp, color: Colors.grey[600]),
+                    ),
+                  ],
+                ),
+              ),
+              if (!state.isLocationLoading)
+                IconButton(
+                  onPressed: () {
+                    context.read<RegisterConsumerBloc>().add(const RegisterConsumerEvent.fetchLocation());
+                  },
+                  icon: Icon(Icons.refresh, size: 18.sp, color: const Color(0xFF2D5A27)),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 

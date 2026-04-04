@@ -55,12 +55,13 @@ extension RegisterFarmerEventPatterns on RegisterFarmerEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( RegisterSubmitted value)?  registerSubmitted,TResult Function( TogglePasswordVisibility value)?  togglePasswordVisibility,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( RegisterSubmitted value)?  registerSubmitted,TResult Function( TogglePasswordVisibility value)?  togglePasswordVisibility,TResult Function( FetchLocation value)?  fetchLocation,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case RegisterSubmitted() when registerSubmitted != null:
 return registerSubmitted(_that);case TogglePasswordVisibility() when togglePasswordVisibility != null:
-return togglePasswordVisibility(_that);case _:
+return togglePasswordVisibility(_that);case FetchLocation() when fetchLocation != null:
+return fetchLocation(_that);case _:
   return orElse();
 
 }
@@ -78,12 +79,13 @@ return togglePasswordVisibility(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( RegisterSubmitted value)  registerSubmitted,required TResult Function( TogglePasswordVisibility value)  togglePasswordVisibility,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( RegisterSubmitted value)  registerSubmitted,required TResult Function( TogglePasswordVisibility value)  togglePasswordVisibility,required TResult Function( FetchLocation value)  fetchLocation,}){
 final _that = this;
 switch (_that) {
 case RegisterSubmitted():
 return registerSubmitted(_that);case TogglePasswordVisibility():
-return togglePasswordVisibility(_that);case _:
+return togglePasswordVisibility(_that);case FetchLocation():
+return fetchLocation(_that);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -100,12 +102,13 @@ return togglePasswordVisibility(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( RegisterSubmitted value)?  registerSubmitted,TResult? Function( TogglePasswordVisibility value)?  togglePasswordVisibility,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( RegisterSubmitted value)?  registerSubmitted,TResult? Function( TogglePasswordVisibility value)?  togglePasswordVisibility,TResult? Function( FetchLocation value)?  fetchLocation,}){
 final _that = this;
 switch (_that) {
 case RegisterSubmitted() when registerSubmitted != null:
 return registerSubmitted(_that);case TogglePasswordVisibility() when togglePasswordVisibility != null:
-return togglePasswordVisibility(_that);case _:
+return togglePasswordVisibility(_that);case FetchLocation() when fetchLocation != null:
+return fetchLocation(_that);case _:
   return null;
 
 }
@@ -122,11 +125,12 @@ return togglePasswordVisibility(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( String name,  String email,  String password,  String phone,  double latitude,  double longitude)?  registerSubmitted,TResult Function()?  togglePasswordVisibility,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( String name,  String email,  String password,  String phone,  double latitude,  double longitude)?  registerSubmitted,TResult Function()?  togglePasswordVisibility,TResult Function()?  fetchLocation,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case RegisterSubmitted() when registerSubmitted != null:
 return registerSubmitted(_that.name,_that.email,_that.password,_that.phone,_that.latitude,_that.longitude);case TogglePasswordVisibility() when togglePasswordVisibility != null:
-return togglePasswordVisibility();case _:
+return togglePasswordVisibility();case FetchLocation() when fetchLocation != null:
+return fetchLocation();case _:
   return orElse();
 
 }
@@ -144,11 +148,12 @@ return togglePasswordVisibility();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( String name,  String email,  String password,  String phone,  double latitude,  double longitude)  registerSubmitted,required TResult Function()  togglePasswordVisibility,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( String name,  String email,  String password,  String phone,  double latitude,  double longitude)  registerSubmitted,required TResult Function()  togglePasswordVisibility,required TResult Function()  fetchLocation,}) {final _that = this;
 switch (_that) {
 case RegisterSubmitted():
 return registerSubmitted(_that.name,_that.email,_that.password,_that.phone,_that.latitude,_that.longitude);case TogglePasswordVisibility():
-return togglePasswordVisibility();case _:
+return togglePasswordVisibility();case FetchLocation():
+return fetchLocation();case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -165,11 +170,12 @@ return togglePasswordVisibility();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( String name,  String email,  String password,  String phone,  double latitude,  double longitude)?  registerSubmitted,TResult? Function()?  togglePasswordVisibility,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( String name,  String email,  String password,  String phone,  double latitude,  double longitude)?  registerSubmitted,TResult? Function()?  togglePasswordVisibility,TResult? Function()?  fetchLocation,}) {final _that = this;
 switch (_that) {
 case RegisterSubmitted() when registerSubmitted != null:
 return registerSubmitted(_that.name,_that.email,_that.password,_that.phone,_that.latitude,_that.longitude);case TogglePasswordVisibility() when togglePasswordVisibility != null:
-return togglePasswordVisibility();case _:
+return togglePasswordVisibility();case FetchLocation() when fetchLocation != null:
+return fetchLocation();case _:
   return null;
 
 }
@@ -277,6 +283,38 @@ int get hashCode => runtimeType.hashCode;
 @override
 String toString() {
   return 'RegisterFarmerEvent.togglePasswordVisibility()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class FetchLocation implements RegisterFarmerEvent {
+  const FetchLocation();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FetchLocation);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'RegisterFarmerEvent.fetchLocation()';
 }
 
 

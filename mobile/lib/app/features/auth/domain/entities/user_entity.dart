@@ -9,6 +9,7 @@ abstract class UserEntity with _$UserEntity {
     required String id,
     required String name,
     required String email,
+    required String role,
     String? phone,
   }) = _UserEntity;
 
