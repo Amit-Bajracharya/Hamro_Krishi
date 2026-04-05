@@ -283,7 +283,7 @@ class ContractsScreen extends StatelessWidget {
             children: [
               _buildInfoColumn('Farmer Price', 'Rs. ${contract.farmerSellingPrice}'),
               _buildInfoColumn('Start Date', DateFormat('MMM dd, yyyy').format(contract.startDate)),
-              _buildInfoColumn('Type', 'Direct Trade'),
+              _buildInfoColumn('Expiry Date', contract.expiryDate != null ? DateFormat('MMM d, yyyy').format(contract.expiryDate!) : 'Not Set'),
             ],
           ),
           if (isFarmer && isPending) ...[

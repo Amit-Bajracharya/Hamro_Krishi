@@ -5,14 +5,14 @@ exports.createContract = async (req, res) => {
   const { 
     farmer_id, middleman_id, product_id, 
     quantity, farmer_selling_price, trader_selling_price, 
-    start_date, status 
+    start_date, expiry_date, status 
   } = req.body;
 
   try {
     const result = await db.query(
       `INSERT INTO public.contracts 
-        (farmer_id, middleman_id, product_id, quantity, farmer_selling_price, trader_selling_price, start_date, status) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, COALESCE($8, 'active')) 
+        (farmer_id, middleman_id, product_id, quantity, farmer_selling_price, trader_selling_price, start_date, expiry_date, status) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, COALESCE($9, 'active')) 
        RETURNING *`,
       [
         farmer_id || null, 
@@ -21,7 +21,8 @@ exports.createContract = async (req, res) => {
         quantity || null,
         farmer_selling_price || null,
         trader_selling_price || null,
-        start_date || null, 
+        start_date || null,
+        expiry_date || null,
         status || null
       ]
     );
@@ -118,7 +119,7 @@ exports.updateContract = async (req, res) => {
   const { 
     farmer_id, middleman_id, product_id, 
     quantity, farmer_selling_price, trader_selling_price, 
-    start_date, status 
+    start_date, expiry_date, status 
   } = req.body;
 
   try {
@@ -138,9 +139,10 @@ exports.updateContract = async (req, res) => {
          farmer_selling_price = COALESCE($5, farmer_selling_price),
          trader_selling_price = COALESCE($6, trader_selling_price),
          start_date = COALESCE($7, start_date),
-         status = COALESCE($8, status),
+         expiry_date = COALESCE($8, expiry_date),
+         status = COALESCE($9, status),
          updated_at = now()
-       WHERE id = $9 
+       WHERE id = $10 
        RETURNING *`,
       [
         farmer_id || null, 
@@ -150,6 +152,7 @@ exports.updateContract = async (req, res) => {
         farmer_selling_price || null,
         trader_selling_price || null, 
         start_date || null, 
+        expiry_date || null,
         status || null, 
         id
       ]

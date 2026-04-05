@@ -75,7 +75,7 @@ class AppNavigationBar extends StatelessWidget {
         return [
           NavigationItem(Icons.grid_view_rounded, 'DASHBOARD'),
           NavigationItem(Icons.storefront_rounded, 'MARKET'),
-          NavigationItem(Icons.description_rounded, 'CONTRACTS'),
+          NavigationItem(Icons.shopping_bag_rounded, 'ORDERS'),
           NavigationItem(Icons.person_rounded, 'ACCOUNT'),
         ];
       default:

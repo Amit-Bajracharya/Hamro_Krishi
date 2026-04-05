@@ -50,7 +50,7 @@ class FarmerNavigationBar extends StatelessWidget {
     NavigationItem(Icons.grid_view_rounded, 'DASHBOARD'),
     NavigationItem(Icons.eco, 'CROPS'),
     NavigationItem(Icons.request_page, 'REQUESTS'),
-    NavigationItem(Icons.account_balance_wallet, 'FINANCES'),
+    NavigationItem(Icons.shopping_bag_outlined, 'ORDERS'),
   ];
 
   Widget _buildNavItem(int index, IconData icon, String label) {

@@ -6,7 +6,7 @@ import 'package:hamrokrishi_app/app/features/dashboard/presentation/pages/naviga
 import 'package:hamrokrishi_app/app/features/dashboard/presentation/pages/role_based_dashboard.dart';
 import 'package:hamrokrishi_app/app/features/dashboard/presentation/pages/farmer_crops_screen.dart';
 import 'package:hamrokrishi_app/app/features/dashboard/presentation/pages/farmer_requests_screen.dart';
-import 'package:hamrokrishi_app/app/features/dashboard/presentation/pages/farmer_finances_screen.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/pages/farmer_orders_screen.dart';
 import 'package:hamrokrishi_app/app/features/market/presentation/pages/trader_market_screen.dart';
 import 'package:hamrokrishi_app/app/features/product/presentation/pages/list_harvest_screen.dart';
 import 'package:hamrokrishi_app/app/features/product/presentation/bloc/product_bloc.dart';
@@ -17,7 +17,7 @@ import 'package:hamrokrishi_app/app/features/market/presentation/bloc/trader_mar
 import 'package:hamrokrishi_app/app/features/market/presentation/bloc/trader_market_event.dart';
 import 'package:hamrokrishi_app/app/features/consumer_market/presentation/pages/consumer_market_screen.dart';
 import 'package:hamrokrishi_app/app/features/consumer_market/presentation/bloc/consumer_market_bloc.dart';
-import 'package:hamrokrishi_app/app/features/dashboard/presentation/pages/contracts_screen.dart';
+import 'package:hamrokrishi_app/app/features/dashboard/presentation/pages/orders_screen.dart';
 import 'package:hamrokrishi_app/app/features/dashboard/presentation/pages/account_screen.dart';
 import 'package:hamrokrishi_app/app/features/introduction_screen/presentation/pages/introduction_screen.dart';
 import 'package:hamrokrishi_app/app/features/auth/presentation/pages/login_screen.dart';
@@ -123,13 +123,13 @@ final GoRouter router = GoRouter(
           ],
         ),
 
-        // Branch 2: Contracts
+        // Branch 2: Orders
         StatefulShellBranch(
           initialLocation: AppRoutes.contracts,
           routes: [
             GoRoute(
               path: AppRoutes.contracts,
-              builder: (context, state) => const ContractsScreen(),
+              builder: (context, state) => const OrdersScreen(),
             ),
           ],
         ),
@@ -179,13 +179,13 @@ final GoRouter router = GoRouter(
           ],
         ),
 
-        // Branch 6: Farmer Finances
+        // Branch 6: Farmer Orders
         StatefulShellBranch(
-          initialLocation: AppRoutes.farmerFinances,
+          initialLocation: AppRoutes.farmerFinances, // keeping route constant name for now
           routes: [
             GoRoute(
               path: AppRoutes.farmerFinances,
-              builder: (context, state) => const FarmerFinancesScreen(),
+              builder: (context, state) => const FarmerOrdersScreen(),
             ),
           ],
         ),

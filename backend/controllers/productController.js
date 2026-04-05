@@ -50,6 +50,14 @@ exports.getAllProducts = async (req, res) => {
     query += ' ORDER BY p.created_at DESC';
 
     const result = await db.query(query, values);
+    
+    // Debug: Check if price is null
+    console.log('getAllProducts: Returning', result.rowCount, 'products');
+    if (result.rows.length > 0) {
+      console.log('getAllProducts: First product price:', result.rows[0].price);
+      console.log('getAllProducts: First product fields:', Object.keys(result.rows[0]));
+    }
+    
     res.json({ success: true, count: result.rowCount, data: result.rows });
   } catch (error) {
     console.error('Get All Products Error:', error);

@@ -9,6 +9,9 @@ part of 'market_item_entity.dart';
 _MarketItemEntity _$MarketItemEntityFromJson(Map<String, dynamic> json) =>
     _MarketItemEntity(
       contractId: json['contract_id'] as String,
+      productId: json['product_id'] as String?,
+      farmerId: json['farmer_id'] as String?,
+      middlemanId: json['middleman_id'] as String?,
       productName: json['product_name'] as String,
       category: json['category'] as String,
       quantity: (json['quantity'] as num).toDouble(),
@@ -31,6 +34,9 @@ _MarketItemEntity _$MarketItemEntityFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$MarketItemEntityToJson(_MarketItemEntity instance) =>
     <String, dynamic>{
       'contract_id': instance.contractId,
+      'product_id': instance.productId,
+      'farmer_id': instance.farmerId,
+      'middleman_id': instance.middlemanId,
       'product_name': instance.productName,
       'category': instance.category,
       'quantity': instance.quantity,

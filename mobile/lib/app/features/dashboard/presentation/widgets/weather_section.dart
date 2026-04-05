@@ -176,7 +176,7 @@ class WeatherSection extends StatelessWidget {
                 Expanded(
                   child: Text(
                     weather.temperature > 15 && weather.temperature < 35 
-                        ? 'Good conditions for today'
+                        ? 'Good conditions for farming'
                         : 'Be careful with the weather today',
                     style: TextStyle(
                       fontSize: 12.sp,

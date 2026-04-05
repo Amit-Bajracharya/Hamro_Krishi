@@ -49,7 +49,7 @@ class ConsumerNavigationBar extends StatelessWidget {
   final List<NavigationItem> _navigationItems = [
     NavigationItem(Icons.grid_view_rounded, 'DASHBOARD'),
     NavigationItem(Icons.storefront_rounded, 'MARKET'),
-    NavigationItem(Icons.description_rounded, 'CONTRACTS'),
+    NavigationItem(Icons.shopping_bag_rounded, 'ORDERS'),
     NavigationItem(Icons.person_rounded, 'ACCOUNT'),
   ];
 

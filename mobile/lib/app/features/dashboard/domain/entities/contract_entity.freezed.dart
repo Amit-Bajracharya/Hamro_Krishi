@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ContractEntity {
 
- String? get id;@JsonKey(name: 'farmer_id') String get farmerId;@JsonKey(name: 'middleman_id') String get middlemanId;@JsonKey(name: 'product_id') String get productId; double get quantity;@JsonKey(name: 'farmer_selling_price') double get farmerSellingPrice;@JsonKey(name: 'trader_selling_price') double get traderSellingPrice;@JsonKey(name: 'start_date') DateTime get startDate; String get status;@JsonKey(name: 'trader_name') String? get traderName;@JsonKey(name: 'farmer_name') String? get farmerName;@JsonKey(name: 'product_name') String? get productName;@JsonKey(name: 'created_at') DateTime? get createdAt;@JsonKey(name: 'updated_at') DateTime? get updatedAt;
+ String? get id;@JsonKey(name: 'farmer_id') String get farmerId;@JsonKey(name: 'middleman_id') String get middlemanId;@JsonKey(name: 'product_id') String get productId; double get quantity;@JsonKey(name: 'farmer_selling_price') double get farmerSellingPrice;@JsonKey(name: 'trader_selling_price') double get traderSellingPrice;@JsonKey(name: 'start_date') DateTime get startDate;@JsonKey(name: 'expiry_date') DateTime? get expiryDate; String get status;@JsonKey(name: 'trader_name') String? get traderName;@JsonKey(name: 'farmer_name') String? get farmerName;@JsonKey(name: 'product_name') String? get productName;@JsonKey(name: 'created_at') DateTime? get createdAt;@JsonKey(name: 'updated_at') DateTime? get updatedAt;
 /// Create a copy of ContractEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $ContractEntityCopyWith<ContractEntity> get copyWith => _$ContractEntityCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ContractEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.farmerId, farmerId) || other.farmerId == farmerId)&&(identical(other.middlemanId, middlemanId) || other.middlemanId == middlemanId)&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.farmerSellingPrice, farmerSellingPrice) || other.farmerSellingPrice == farmerSellingPrice)&&(identical(other.traderSellingPrice, traderSellingPrice) || other.traderSellingPrice == traderSellingPrice)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.status, status) || other.status == status)&&(identical(other.traderName, traderName) || other.traderName == traderName)&&(identical(other.farmerName, farmerName) || other.farmerName == farmerName)&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ContractEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.farmerId, farmerId) || other.farmerId == farmerId)&&(identical(other.middlemanId, middlemanId) || other.middlemanId == middlemanId)&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.farmerSellingPrice, farmerSellingPrice) || other.farmerSellingPrice == farmerSellingPrice)&&(identical(other.traderSellingPrice, traderSellingPrice) || other.traderSellingPrice == traderSellingPrice)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.expiryDate, expiryDate) || other.expiryDate == expiryDate)&&(identical(other.status, status) || other.status == status)&&(identical(other.traderName, traderName) || other.traderName == traderName)&&(identical(other.farmerName, farmerName) || other.farmerName == farmerName)&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,farmerId,middlemanId,productId,quantity,farmerSellingPrice,traderSellingPrice,startDate,status,traderName,farmerName,productName,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,farmerId,middlemanId,productId,quantity,farmerSellingPrice,traderSellingPrice,startDate,expiryDate,status,traderName,farmerName,productName,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'ContractEntity(id: $id, farmerId: $farmerId, middlemanId: $middlemanId, productId: $productId, quantity: $quantity, farmerSellingPrice: $farmerSellingPrice, traderSellingPrice: $traderSellingPrice, startDate: $startDate, status: $status, traderName: $traderName, farmerName: $farmerName, productName: $productName, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'ContractEntity(id: $id, farmerId: $farmerId, middlemanId: $middlemanId, productId: $productId, quantity: $quantity, farmerSellingPrice: $farmerSellingPrice, traderSellingPrice: $traderSellingPrice, startDate: $startDate, expiryDate: $expiryDate, status: $status, traderName: $traderName, farmerName: $farmerName, productName: $productName, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $ContractEntityCopyWith<$Res>  {
   factory $ContractEntityCopyWith(ContractEntity value, $Res Function(ContractEntity) _then) = _$ContractEntityCopyWithImpl;
 @useResult
 $Res call({
- String? id,@JsonKey(name: 'farmer_id') String farmerId,@JsonKey(name: 'middleman_id') String middlemanId,@JsonKey(name: 'product_id') String productId, double quantity,@JsonKey(name: 'farmer_selling_price') double farmerSellingPrice,@JsonKey(name: 'trader_selling_price') double traderSellingPrice,@JsonKey(name: 'start_date') DateTime startDate, String status,@JsonKey(name: 'trader_name') String? traderName,@JsonKey(name: 'farmer_name') String? farmerName,@JsonKey(name: 'product_name') String? productName,@JsonKey(name: 'created_at') DateTime? createdAt,@JsonKey(name: 'updated_at') DateTime? updatedAt
+ String? id,@JsonKey(name: 'farmer_id') String farmerId,@JsonKey(name: 'middleman_id') String middlemanId,@JsonKey(name: 'product_id') String productId, double quantity,@JsonKey(name: 'farmer_selling_price') double farmerSellingPrice,@JsonKey(name: 'trader_selling_price') double traderSellingPrice,@JsonKey(name: 'start_date') DateTime startDate,@JsonKey(name: 'expiry_date') DateTime? expiryDate, String status,@JsonKey(name: 'trader_name') String? traderName,@JsonKey(name: 'farmer_name') String? farmerName,@JsonKey(name: 'product_name') String? productName,@JsonKey(name: 'created_at') DateTime? createdAt,@JsonKey(name: 'updated_at') DateTime? updatedAt
 });
 
 
@@ -65,7 +65,7 @@ class _$ContractEntityCopyWithImpl<$Res>
 
 /// Create a copy of ContractEntity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? farmerId = null,Object? middlemanId = null,Object? productId = null,Object? quantity = null,Object? farmerSellingPrice = null,Object? traderSellingPrice = null,Object? startDate = null,Object? status = null,Object? traderName = freezed,Object? farmerName = freezed,Object? productName = freezed,Object? createdAt = freezed,Object? updatedAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? farmerId = null,Object? middlemanId = null,Object? productId = null,Object? quantity = null,Object? farmerSellingPrice = null,Object? traderSellingPrice = null,Object? startDate = null,Object? expiryDate = freezed,Object? status = null,Object? traderName = freezed,Object? farmerName = freezed,Object? productName = freezed,Object? createdAt = freezed,Object? updatedAt = freezed,}) {
   return _then(_self.copyWith(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,farmerId: null == farmerId ? _self.farmerId : farmerId // ignore: cast_nullable_to_non_nullable
@@ -75,7 +75,8 @@ as String,quantity: null == quantity ? _self.quantity : quantity // ignore: cast
 as double,farmerSellingPrice: null == farmerSellingPrice ? _self.farmerSellingPrice : farmerSellingPrice // ignore: cast_nullable_to_non_nullable
 as double,traderSellingPrice: null == traderSellingPrice ? _self.traderSellingPrice : traderSellingPrice // ignore: cast_nullable_to_non_nullable
 as double,startDate: null == startDate ? _self.startDate : startDate // ignore: cast_nullable_to_non_nullable
-as DateTime,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as DateTime,expiryDate: freezed == expiryDate ? _self.expiryDate : expiryDate // ignore: cast_nullable_to_non_nullable
+as DateTime?,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String,traderName: freezed == traderName ? _self.traderName : traderName // ignore: cast_nullable_to_non_nullable
 as String?,farmerName: freezed == farmerName ? _self.farmerName : farmerName // ignore: cast_nullable_to_non_nullable
 as String?,productName: freezed == productName ? _self.productName : productName // ignore: cast_nullable_to_non_nullable
@@ -166,10 +167,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? id, @JsonKey(name: 'farmer_id')  String farmerId, @JsonKey(name: 'middleman_id')  String middlemanId, @JsonKey(name: 'product_id')  String productId,  double quantity, @JsonKey(name: 'farmer_selling_price')  double farmerSellingPrice, @JsonKey(name: 'trader_selling_price')  double traderSellingPrice, @JsonKey(name: 'start_date')  DateTime startDate,  String status, @JsonKey(name: 'trader_name')  String? traderName, @JsonKey(name: 'farmer_name')  String? farmerName, @JsonKey(name: 'product_name')  String? productName, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? id, @JsonKey(name: 'farmer_id')  String farmerId, @JsonKey(name: 'middleman_id')  String middlemanId, @JsonKey(name: 'product_id')  String productId,  double quantity, @JsonKey(name: 'farmer_selling_price')  double farmerSellingPrice, @JsonKey(name: 'trader_selling_price')  double traderSellingPrice, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'expiry_date')  DateTime? expiryDate,  String status, @JsonKey(name: 'trader_name')  String? traderName, @JsonKey(name: 'farmer_name')  String? farmerName, @JsonKey(name: 'product_name')  String? productName, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ContractEntity() when $default != null:
-return $default(_that.id,_that.farmerId,_that.middlemanId,_that.productId,_that.quantity,_that.farmerSellingPrice,_that.traderSellingPrice,_that.startDate,_that.status,_that.traderName,_that.farmerName,_that.productName,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.farmerId,_that.middlemanId,_that.productId,_that.quantity,_that.farmerSellingPrice,_that.traderSellingPrice,_that.startDate,_that.expiryDate,_that.status,_that.traderName,_that.farmerName,_that.productName,_that.createdAt,_that.updatedAt);case _:
   return orElse();
 
 }
@@ -187,10 +188,10 @@ return $default(_that.id,_that.farmerId,_that.middlemanId,_that.productId,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? id, @JsonKey(name: 'farmer_id')  String farmerId, @JsonKey(name: 'middleman_id')  String middlemanId, @JsonKey(name: 'product_id')  String productId,  double quantity, @JsonKey(name: 'farmer_selling_price')  double farmerSellingPrice, @JsonKey(name: 'trader_selling_price')  double traderSellingPrice, @JsonKey(name: 'start_date')  DateTime startDate,  String status, @JsonKey(name: 'trader_name')  String? traderName, @JsonKey(name: 'farmer_name')  String? farmerName, @JsonKey(name: 'product_name')  String? productName, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? id, @JsonKey(name: 'farmer_id')  String farmerId, @JsonKey(name: 'middleman_id')  String middlemanId, @JsonKey(name: 'product_id')  String productId,  double quantity, @JsonKey(name: 'farmer_selling_price')  double farmerSellingPrice, @JsonKey(name: 'trader_selling_price')  double traderSellingPrice, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'expiry_date')  DateTime? expiryDate,  String status, @JsonKey(name: 'trader_name')  String? traderName, @JsonKey(name: 'farmer_name')  String? farmerName, @JsonKey(name: 'product_name')  String? productName, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _ContractEntity():
-return $default(_that.id,_that.farmerId,_that.middlemanId,_that.productId,_that.quantity,_that.farmerSellingPrice,_that.traderSellingPrice,_that.startDate,_that.status,_that.traderName,_that.farmerName,_that.productName,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.farmerId,_that.middlemanId,_that.productId,_that.quantity,_that.farmerSellingPrice,_that.traderSellingPrice,_that.startDate,_that.expiryDate,_that.status,_that.traderName,_that.farmerName,_that.productName,_that.createdAt,_that.updatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -207,10 +208,10 @@ return $default(_that.id,_that.farmerId,_that.middlemanId,_that.productId,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? id, @JsonKey(name: 'farmer_id')  String farmerId, @JsonKey(name: 'middleman_id')  String middlemanId, @JsonKey(name: 'product_id')  String productId,  double quantity, @JsonKey(name: 'farmer_selling_price')  double farmerSellingPrice, @JsonKey(name: 'trader_selling_price')  double traderSellingPrice, @JsonKey(name: 'start_date')  DateTime startDate,  String status, @JsonKey(name: 'trader_name')  String? traderName, @JsonKey(name: 'farmer_name')  String? farmerName, @JsonKey(name: 'product_name')  String? productName, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? id, @JsonKey(name: 'farmer_id')  String farmerId, @JsonKey(name: 'middleman_id')  String middlemanId, @JsonKey(name: 'product_id')  String productId,  double quantity, @JsonKey(name: 'farmer_selling_price')  double farmerSellingPrice, @JsonKey(name: 'trader_selling_price')  double traderSellingPrice, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'expiry_date')  DateTime? expiryDate,  String status, @JsonKey(name: 'trader_name')  String? traderName, @JsonKey(name: 'farmer_name')  String? farmerName, @JsonKey(name: 'product_name')  String? productName, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _ContractEntity() when $default != null:
-return $default(_that.id,_that.farmerId,_that.middlemanId,_that.productId,_that.quantity,_that.farmerSellingPrice,_that.traderSellingPrice,_that.startDate,_that.status,_that.traderName,_that.farmerName,_that.productName,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.farmerId,_that.middlemanId,_that.productId,_that.quantity,_that.farmerSellingPrice,_that.traderSellingPrice,_that.startDate,_that.expiryDate,_that.status,_that.traderName,_that.farmerName,_that.productName,_that.createdAt,_that.updatedAt);case _:
   return null;
 
 }
@@ -222,7 +223,7 @@ return $default(_that.id,_that.farmerId,_that.middlemanId,_that.productId,_that.
 @JsonSerializable()
 
 class _ContractEntity implements ContractEntity {
-  const _ContractEntity({this.id, @JsonKey(name: 'farmer_id') required this.farmerId, @JsonKey(name: 'middleman_id') required this.middlemanId, @JsonKey(name: 'product_id') required this.productId, required this.quantity, @JsonKey(name: 'farmer_selling_price') required this.farmerSellingPrice, @JsonKey(name: 'trader_selling_price') required this.traderSellingPrice, @JsonKey(name: 'start_date') required this.startDate, this.status = 'active', @JsonKey(name: 'trader_name') this.traderName, @JsonKey(name: 'farmer_name') this.farmerName, @JsonKey(name: 'product_name') this.productName, @JsonKey(name: 'created_at') this.createdAt, @JsonKey(name: 'updated_at') this.updatedAt});
+  const _ContractEntity({this.id, @JsonKey(name: 'farmer_id') required this.farmerId, @JsonKey(name: 'middleman_id') required this.middlemanId, @JsonKey(name: 'product_id') required this.productId, required this.quantity, @JsonKey(name: 'farmer_selling_price') required this.farmerSellingPrice, @JsonKey(name: 'trader_selling_price') required this.traderSellingPrice, @JsonKey(name: 'start_date') required this.startDate, @JsonKey(name: 'expiry_date') this.expiryDate, this.status = 'active', @JsonKey(name: 'trader_name') this.traderName, @JsonKey(name: 'farmer_name') this.farmerName, @JsonKey(name: 'product_name') this.productName, @JsonKey(name: 'created_at') this.createdAt, @JsonKey(name: 'updated_at') this.updatedAt});
   factory _ContractEntity.fromJson(Map<String, dynamic> json) => _$ContractEntityFromJson(json);
 
 @override final  String? id;
@@ -233,6 +234,7 @@ class _ContractEntity implements ContractEntity {
 @override@JsonKey(name: 'farmer_selling_price') final  double farmerSellingPrice;
 @override@JsonKey(name: 'trader_selling_price') final  double traderSellingPrice;
 @override@JsonKey(name: 'start_date') final  DateTime startDate;
+@override@JsonKey(name: 'expiry_date') final  DateTime? expiryDate;
 @override@JsonKey() final  String status;
 @override@JsonKey(name: 'trader_name') final  String? traderName;
 @override@JsonKey(name: 'farmer_name') final  String? farmerName;
@@ -253,16 +255,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ContractEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.farmerId, farmerId) || other.farmerId == farmerId)&&(identical(other.middlemanId, middlemanId) || other.middlemanId == middlemanId)&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.farmerSellingPrice, farmerSellingPrice) || other.farmerSellingPrice == farmerSellingPrice)&&(identical(other.traderSellingPrice, traderSellingPrice) || other.traderSellingPrice == traderSellingPrice)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.status, status) || other.status == status)&&(identical(other.traderName, traderName) || other.traderName == traderName)&&(identical(other.farmerName, farmerName) || other.farmerName == farmerName)&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ContractEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.farmerId, farmerId) || other.farmerId == farmerId)&&(identical(other.middlemanId, middlemanId) || other.middlemanId == middlemanId)&&(identical(other.productId, productId) || other.productId == productId)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.farmerSellingPrice, farmerSellingPrice) || other.farmerSellingPrice == farmerSellingPrice)&&(identical(other.traderSellingPrice, traderSellingPrice) || other.traderSellingPrice == traderSellingPrice)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.expiryDate, expiryDate) || other.expiryDate == expiryDate)&&(identical(other.status, status) || other.status == status)&&(identical(other.traderName, traderName) || other.traderName == traderName)&&(identical(other.farmerName, farmerName) || other.farmerName == farmerName)&&(identical(other.productName, productName) || other.productName == productName)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,farmerId,middlemanId,productId,quantity,farmerSellingPrice,traderSellingPrice,startDate,status,traderName,farmerName,productName,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,farmerId,middlemanId,productId,quantity,farmerSellingPrice,traderSellingPrice,startDate,expiryDate,status,traderName,farmerName,productName,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'ContractEntity(id: $id, farmerId: $farmerId, middlemanId: $middlemanId, productId: $productId, quantity: $quantity, farmerSellingPrice: $farmerSellingPrice, traderSellingPrice: $traderSellingPrice, startDate: $startDate, status: $status, traderName: $traderName, farmerName: $farmerName, productName: $productName, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'ContractEntity(id: $id, farmerId: $farmerId, middlemanId: $middlemanId, productId: $productId, quantity: $quantity, farmerSellingPrice: $farmerSellingPrice, traderSellingPrice: $traderSellingPrice, startDate: $startDate, expiryDate: $expiryDate, status: $status, traderName: $traderName, farmerName: $farmerName, productName: $productName, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -273,7 +275,7 @@ abstract mixin class _$ContractEntityCopyWith<$Res> implements $ContractEntityCo
   factory _$ContractEntityCopyWith(_ContractEntity value, $Res Function(_ContractEntity) _then) = __$ContractEntityCopyWithImpl;
 @override @useResult
 $Res call({
- String? id,@JsonKey(name: 'farmer_id') String farmerId,@JsonKey(name: 'middleman_id') String middlemanId,@JsonKey(name: 'product_id') String productId, double quantity,@JsonKey(name: 'farmer_selling_price') double farmerSellingPrice,@JsonKey(name: 'trader_selling_price') double traderSellingPrice,@JsonKey(name: 'start_date') DateTime startDate, String status,@JsonKey(name: 'trader_name') String? traderName,@JsonKey(name: 'farmer_name') String? farmerName,@JsonKey(name: 'product_name') String? productName,@JsonKey(name: 'created_at') DateTime? createdAt,@JsonKey(name: 'updated_at') DateTime? updatedAt
+ String? id,@JsonKey(name: 'farmer_id') String farmerId,@JsonKey(name: 'middleman_id') String middlemanId,@JsonKey(name: 'product_id') String productId, double quantity,@JsonKey(name: 'farmer_selling_price') double farmerSellingPrice,@JsonKey(name: 'trader_selling_price') double traderSellingPrice,@JsonKey(name: 'start_date') DateTime startDate,@JsonKey(name: 'expiry_date') DateTime? expiryDate, String status,@JsonKey(name: 'trader_name') String? traderName,@JsonKey(name: 'farmer_name') String? farmerName,@JsonKey(name: 'product_name') String? productName,@JsonKey(name: 'created_at') DateTime? createdAt,@JsonKey(name: 'updated_at') DateTime? updatedAt
 });
 
 
@@ -290,7 +292,7 @@ class __$ContractEntityCopyWithImpl<$Res>
 
 /// Create a copy of ContractEntity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? farmerId = null,Object? middlemanId = null,Object? productId = null,Object? quantity = null,Object? farmerSellingPrice = null,Object? traderSellingPrice = null,Object? startDate = null,Object? status = null,Object? traderName = freezed,Object? farmerName = freezed,Object? productName = freezed,Object? createdAt = freezed,Object? updatedAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? farmerId = null,Object? middlemanId = null,Object? productId = null,Object? quantity = null,Object? farmerSellingPrice = null,Object? traderSellingPrice = null,Object? startDate = null,Object? expiryDate = freezed,Object? status = null,Object? traderName = freezed,Object? farmerName = freezed,Object? productName = freezed,Object? createdAt = freezed,Object? updatedAt = freezed,}) {
   return _then(_ContractEntity(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,farmerId: null == farmerId ? _self.farmerId : farmerId // ignore: cast_nullable_to_non_nullable
@@ -300,7 +302,8 @@ as String,quantity: null == quantity ? _self.quantity : quantity // ignore: cast
 as double,farmerSellingPrice: null == farmerSellingPrice ? _self.farmerSellingPrice : farmerSellingPrice // ignore: cast_nullable_to_non_nullable
 as double,traderSellingPrice: null == traderSellingPrice ? _self.traderSellingPrice : traderSellingPrice // ignore: cast_nullable_to_non_nullable
 as double,startDate: null == startDate ? _self.startDate : startDate // ignore: cast_nullable_to_non_nullable
-as DateTime,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as DateTime,expiryDate: freezed == expiryDate ? _self.expiryDate : expiryDate // ignore: cast_nullable_to_non_nullable
+as DateTime?,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String,traderName: freezed == traderName ? _self.traderName : traderName // ignore: cast_nullable_to_non_nullable
 as String?,farmerName: freezed == farmerName ? _self.farmerName : farmerName // ignore: cast_nullable_to_non_nullable
 as String?,productName: freezed == productName ? _self.productName : productName // ignore: cast_nullable_to_non_nullable

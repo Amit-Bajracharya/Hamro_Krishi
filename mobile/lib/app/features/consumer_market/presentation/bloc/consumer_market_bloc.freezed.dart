@@ -320,12 +320,12 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( List<MarketItemEntity> items)?  loaded,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( List<MarketItemEntity> marketItems,  List<ProductEntity> farmerProducts)?  loaded,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case ConsumerMarketInitial() when initial != null:
 return initial();case ConsumerMarketLoading() when loading != null:
 return loading();case ConsumerMarketLoaded() when loaded != null:
-return loaded(_that.items);case ConsumerMarketError() when error != null:
+return loaded(_that.marketItems,_that.farmerProducts);case ConsumerMarketError() when error != null:
 return error(_that.message);case _:
   return orElse();
 
@@ -344,12 +344,12 @@ return error(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( List<MarketItemEntity> items)  loaded,required TResult Function( String message)  error,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( List<MarketItemEntity> marketItems,  List<ProductEntity> farmerProducts)  loaded,required TResult Function( String message)  error,}) {final _that = this;
 switch (_that) {
 case ConsumerMarketInitial():
 return initial();case ConsumerMarketLoading():
 return loading();case ConsumerMarketLoaded():
-return loaded(_that.items);case ConsumerMarketError():
+return loaded(_that.marketItems,_that.farmerProducts);case ConsumerMarketError():
 return error(_that.message);case _:
   throw StateError('Unexpected subclass');
 
@@ -367,12 +367,12 @@ return error(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( List<MarketItemEntity> items)?  loaded,TResult? Function( String message)?  error,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( List<MarketItemEntity> marketItems,  List<ProductEntity> farmerProducts)?  loaded,TResult? Function( String message)?  error,}) {final _that = this;
 switch (_that) {
 case ConsumerMarketInitial() when initial != null:
 return initial();case ConsumerMarketLoading() when loading != null:
 return loading();case ConsumerMarketLoaded() when loaded != null:
-return loaded(_that.items);case ConsumerMarketError() when error != null:
+return loaded(_that.marketItems,_that.farmerProducts);case ConsumerMarketError() when error != null:
 return error(_that.message);case _:
   return null;
 
@@ -449,14 +449,21 @@ String toString() {
 
 
 class ConsumerMarketLoaded implements ConsumerMarketState {
-  const ConsumerMarketLoaded(final  List<MarketItemEntity> items): _items = items;
+  const ConsumerMarketLoaded({required final  List<MarketItemEntity> marketItems, required final  List<ProductEntity> farmerProducts}): _marketItems = marketItems,_farmerProducts = farmerProducts;
   
 
- final  List<MarketItemEntity> _items;
- List<MarketItemEntity> get items {
-  if (_items is EqualUnmodifiableListView) return _items;
+ final  List<MarketItemEntity> _marketItems;
+ List<MarketItemEntity> get marketItems {
+  if (_marketItems is EqualUnmodifiableListView) return _marketItems;
   // ignore: implicit_dynamic_type
-  return EqualUnmodifiableListView(_items);
+  return EqualUnmodifiableListView(_marketItems);
+}
+
+ final  List<ProductEntity> _farmerProducts;
+ List<ProductEntity> get farmerProducts {
+  if (_farmerProducts is EqualUnmodifiableListView) return _farmerProducts;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_farmerProducts);
 }
 
 
@@ -470,16 +477,16 @@ $ConsumerMarketLoadedCopyWith<ConsumerMarketLoaded> get copyWith => _$ConsumerMa
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ConsumerMarketLoaded&&const DeepCollectionEquality().equals(other._items, _items));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ConsumerMarketLoaded&&const DeepCollectionEquality().equals(other._marketItems, _marketItems)&&const DeepCollectionEquality().equals(other._farmerProducts, _farmerProducts));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_items));
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_marketItems),const DeepCollectionEquality().hash(_farmerProducts));
 
 @override
 String toString() {
-  return 'ConsumerMarketState.loaded(items: $items)';
+  return 'ConsumerMarketState.loaded(marketItems: $marketItems, farmerProducts: $farmerProducts)';
 }
 
 
@@ -490,7 +497,7 @@ abstract mixin class $ConsumerMarketLoadedCopyWith<$Res> implements $ConsumerMar
   factory $ConsumerMarketLoadedCopyWith(ConsumerMarketLoaded value, $Res Function(ConsumerMarketLoaded) _then) = _$ConsumerMarketLoadedCopyWithImpl;
 @useResult
 $Res call({
- List<MarketItemEntity> items
+ List<MarketItemEntity> marketItems, List<ProductEntity> farmerProducts
 });
 
 
@@ -507,10 +514,11 @@ class _$ConsumerMarketLoadedCopyWithImpl<$Res>
 
 /// Create a copy of ConsumerMarketState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? items = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? marketItems = null,Object? farmerProducts = null,}) {
   return _then(ConsumerMarketLoaded(
-null == items ? _self._items : items // ignore: cast_nullable_to_non_nullable
-as List<MarketItemEntity>,
+marketItems: null == marketItems ? _self._marketItems : marketItems // ignore: cast_nullable_to_non_nullable
+as List<MarketItemEntity>,farmerProducts: null == farmerProducts ? _self._farmerProducts : farmerProducts // ignore: cast_nullable_to_non_nullable
+as List<ProductEntity>,
   ));
 }
 

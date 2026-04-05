@@ -25,6 +25,7 @@ app.get('/', (req, res) => {
   res.json({ message: 'Welcome to Hamro Krishi API' });
 });
 
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
   console.log(`🚀 Server running on http://localhost:${port}`);
+  console.log(`🌐 Accessible from emulator at: http://10.0.2.2:${port}`);
 });

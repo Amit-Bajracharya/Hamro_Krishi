@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hamrokrishi_app/app/core/services/user_session_service.dart';
 import 'package:hamrokrishi_app/app/features/auth/domain/usecases/login_use_case.dart';
 import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/login_event.dart';
 import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/login_state.dart';
@@ -16,6 +17,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     LogoutRequested event,
     Emitter<LoginState> emit,
   ) async {
+    await UserSessionService.clearSession();
     emit(const LoginState.initial());
   }
 
@@ -30,15 +32,25 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       password: event.password,
     );
     
-    result.fold(
-      (error) => emit(LoginState.failure(
-        error: error,
-        isPasswordHidden: state.isPasswordHidden,
-      )),
-      (user) => emit(LoginState.success(
-        user: user,
-        isPasswordHidden: state.isPasswordHidden,
-      )),
+    await result.fold(
+      (error) async {
+        emit(LoginState.failure(
+          error: error,
+          isPasswordHidden: state.isPasswordHidden,
+        ));
+      },
+      (user) async {
+        // Save user session on successful login
+        await UserSessionService.saveUserSession(
+          userId: user.id,
+          userName: user.name,
+          userRole: user.role,
+        );
+        emit(LoginState.success(
+          user: user,
+          isPasswordHidden: state.isPasswordHidden,
+        ));
+      },
     );
   }
 

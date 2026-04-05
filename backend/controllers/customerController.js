@@ -19,6 +19,9 @@ exports.getConsumerMarketplace = async (req, res) => {
     const result = await db.query(
       `SELECT 
         c.id AS contract_id,
+        c.product_id,
+        c.farmer_id,
+        c.middleman_id,
         c.quantity,
         c.farmer_selling_price,
         c.trader_selling_price,
@@ -43,6 +46,9 @@ exports.getConsumerMarketplace = async (req, res) => {
 
     const items = result.rows.map((row) => ({
       contract_id: row.contract_id,
+      product_id: row.product_id,
+      farmer_id: row.farmer_id,
+      middleman_id: row.middleman_id,
       product_name: row.product_name || 'Unknown Product',
       category: row.category || 'other',
       quantity: parseFloat(row.quantity) || 0,

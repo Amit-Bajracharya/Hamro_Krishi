@@ -15,5 +15,7 @@ class ApiConstants {
   static const String prediction = '/predictions';
   static const String contracts = '/contracts';
   static const String traderProducts = '/trader-products';
+  static const String orders = '/orders';
+  static const String transactions = '/transactions';
 }
 

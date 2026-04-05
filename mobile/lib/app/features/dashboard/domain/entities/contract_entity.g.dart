@@ -16,6 +16,9 @@ _ContractEntity _$ContractEntityFromJson(Map<String, dynamic> json) =>
       farmerSellingPrice: (json['farmer_selling_price'] as num).toDouble(),
       traderSellingPrice: (json['trader_selling_price'] as num).toDouble(),
       startDate: DateTime.parse(json['start_date'] as String),
+      expiryDate: json['expiry_date'] == null
+          ? null
+          : DateTime.parse(json['expiry_date'] as String),
       status: json['status'] as String? ?? 'active',
       traderName: json['trader_name'] as String?,
       farmerName: json['farmer_name'] as String?,
@@ -38,6 +41,7 @@ Map<String, dynamic> _$ContractEntityToJson(_ContractEntity instance) =>
       'farmer_selling_price': instance.farmerSellingPrice,
       'trader_selling_price': instance.traderSellingPrice,
       'start_date': instance.startDate.toIso8601String(),
+      'expiry_date': instance.expiryDate?.toIso8601String(),
       'status': instance.status,
       'trader_name': instance.traderName,
       'farmer_name': instance.farmerName,

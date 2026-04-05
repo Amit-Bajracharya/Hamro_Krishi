@@ -14,6 +14,7 @@ abstract class ContractEntity with _$ContractEntity {
     @JsonKey(name: 'farmer_selling_price') required double farmerSellingPrice,
     @JsonKey(name: 'trader_selling_price') required double traderSellingPrice,
     @JsonKey(name: 'start_date') required DateTime startDate,
+    @JsonKey(name: 'expiry_date') DateTime? expiryDate,
     @Default('active') String status,
     @JsonKey(name: 'trader_name') String? traderName,
     @JsonKey(name: 'farmer_name') String? farmerName,

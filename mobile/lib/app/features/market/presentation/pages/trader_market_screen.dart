@@ -14,8 +14,15 @@ import 'package:hamrokrishi_app/app/features/auth/presentation/bloc/login_state.
 import 'package:hamrokrishi_app/app/core/di/injection_container.dart';
 import 'package:intl/intl.dart';
 
-class TraderMarketScreen extends StatelessWidget {
+class TraderMarketScreen extends StatefulWidget {
   const TraderMarketScreen({super.key});
+
+  @override
+  State<TraderMarketScreen> createState() => _TraderMarketScreenState();
+}
+
+class _TraderMarketScreenState extends State<TraderMarketScreen> {
+  String _sortOption = 'price_low';
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +43,6 @@ class TraderMarketScreen extends StatelessWidget {
                   backgroundColor: Colors.green,
                 ),
               );
-              // pop() moved to dialog level to prevent assertion errors
             },
             failure: (message) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -57,32 +63,39 @@ class TraderMarketScreen extends StatelessWidget {
                   initial: () => const Center(child: CircularProgressIndicator()),
                   loading: () => const Center(child: CircularProgressIndicator()),
                   error: (message) => Center(child: Text('Error: $message')),
-                  loaded: (farmerCount, products) => RefreshIndicator(
-                    onRefresh: () async {
-                      context.read<TraderMarketBloc>().add(const TraderMarketEvent.fetchData());
-                    },
-                    child: SingleChildScrollView(
-                      padding: EdgeInsets.symmetric(horizontal: 20.w),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(height: 24.h),
-                          _buildHeader(),
-                          SizedBox(height: 32.h),
-                          _buildSearchBar(),
-                          SizedBox(height: 24.h),
-                          _buildFilterChips(),
-                          SizedBox(height: 32.h),
-                          _buildMarketOverview(farmerCount, products.length),
-                          SizedBox(height: 32.h),
-                          _buildAvailableProductsSection(products),
-                          SizedBox(height: 32.h),
-                          _buildTrendingProductsSection(),
-                          SizedBox(height: 100.h), // Space for bottom navigation
-                        ],
+                  loaded: (farmerCount, products) {
+                    final sortedProducts = _sortItems(products, _sortOption);
+                    return RefreshIndicator(
+                      onRefresh: () async {
+                        context.read<TraderMarketBloc>().add(
+                              const TraderMarketEvent.fetchData(),
+                            );
+                      },
+                      child: SingleChildScrollView(
+                        padding: EdgeInsets.symmetric(horizontal: 20.w),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(height: 24.h),
+                            _buildHeader(),
+                            SizedBox(height: 32.h),
+                            _buildSearchBar(),
+                            SizedBox(height: 24.h),
+                            _buildFilterChips(),
+                            SizedBox(height: 32.h),
+                            _buildMarketOverview(farmerCount, sortedProducts.length),
+                            SizedBox(height: 32.h),
+                            _buildSortDropdown(),
+                            SizedBox(height: 16.h),
+                            _buildAvailableProductsSection(sortedProducts),
+                            SizedBox(height: 32.h),
+                            _buildTrendingProductsSection(),
+                            SizedBox(height: 100.h),
+                          ],
+                        ),
                       ),
-                    ),
-                  ),
+                    );
+                  },
                 );
               },
             ),
@@ -183,7 +196,9 @@ class TraderMarketScreen extends StatelessWidget {
         color: isSelected ? const Color(0xFF2D5A27) : Colors.white,
         borderRadius: BorderRadius.circular(20.r),
         border: Border.all(
-          color: isSelected ? const Color(0xFF2D5A27) : Colors.grey.withOpacity(0.3),
+          color: isSelected
+              ? const Color(0xFF2D5A27)
+              : Colors.grey.withOpacity(0.3),
         ),
       ),
       child: Text(
@@ -202,8 +217,8 @@ class TraderMarketScreen extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [const Color(0xFF2D5A27), const Color(0xFF4A7C59)],
+        gradient: const LinearGradient(
+          colors: [Color(0xFF2D5A27), Color(0xFF4A7C59)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -230,11 +245,19 @@ class TraderMarketScreen extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: _buildOverviewItem('Active Farmers', farmerCount.toString(), Colors.white),
+                child: _buildOverviewItem(
+                  'Active Farmers',
+                  farmerCount.toString(),
+                  Colors.white,
+                ),
               ),
               SizedBox(width: 20.w),
               Expanded(
-                child: _buildOverviewItem('Available Products', productCount.toString(), Colors.white70),
+                child: _buildOverviewItem(
+                  'Available Products',
+                  productCount.toString(),
+                  Colors.white70,
+                ),
               ),
             ],
           ),
@@ -242,11 +265,19 @@ class TraderMarketScreen extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: _buildOverviewItem('Avg. Price', '2.45/kg', Colors.white70),
+                child: _buildOverviewItem(
+                  'Avg. Price',
+                  '2.45/kg',
+                  Colors.white70,
+                ),
               ),
               SizedBox(width: 20.w),
               Expanded(
-                child: _buildOverviewItem('Today\'s Trades', '43', Colors.white),
+                child: _buildOverviewItem(
+                  "Today's Trades",
+                  '43',
+                  Colors.white,
+                ),
               ),
             ],
           ),
@@ -279,6 +310,90 @@ class TraderMarketScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildSortDropdown() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: Colors.grey[300]!),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.sort, size: 20.sp, color: const Color(0xFF2D5A27)),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: _sortOption,
+                isExpanded: true,
+                icon: const Icon(
+                  Icons.arrow_drop_down,
+                  color: Color(0xFF2D5A27),
+                ),
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: const Color(0xFF1B3A1A),
+                ),
+                items: const [
+                  DropdownMenuItem(
+                    value: 'price_low',
+                    child: Text('Price: Low to High'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'price_high',
+                    child: Text('Price: High to Low'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'location',
+                    child: Text('Sort by Location'),
+                  ),
+                ],
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() {
+                      _sortOption = value;
+                    });
+                  }
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<ProductEntity> _sortItems(
+    List<ProductEntity> products,
+    String sortOption,
+  ) {
+    final sorted = List<ProductEntity>.from(products);
+    switch (sortOption) {
+      case 'price_low':
+        sorted.sort((a, b) => a.price.compareTo(b.price));
+        break;
+      case 'price_high':
+        sorted.sort((a, b) => b.price.compareTo(a.price));
+        break;
+      case 'location':
+        sorted.sort(
+          (a, b) => (a.farmerName ?? '').toLowerCase().compareTo(
+                (b.farmerName ?? '').toLowerCase(),
+              ),
+        );
+        break;
+    }
+    return sorted;
+  }
+
   Widget _buildAvailableProductsSection(List<ProductEntity> products) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -307,9 +422,9 @@ class TraderMarketScreen extends StatelessWidget {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 1, // Single column for large/medium cards as requested
+              crossAxisCount: 1,
               mainAxisSpacing: 20.h,
-              mainAxisExtent: 320.h, // Adjusted for medium image + details
+              mainAxisExtent: 320.h,
             ),
             itemCount: products.length,
             itemBuilder: (context, index) {
@@ -340,11 +455,10 @@ class TraderMarketScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image Section (Medium Size)
             ClipRRect(
               borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
               child: Container(
-                height: 180.h, // Medium height
+                height: 180.h,
                 width: double.infinity,
                 color: const Color(0xFF2D5A27).withOpacity(0.05),
                 child: product.imageUrl != null
@@ -364,7 +478,6 @@ class TraderMarketScreen extends StatelessWidget {
                       ),
               ),
             ),
-            // Details Section
             Padding(
               padding: EdgeInsets.all(20.w),
               child: Column(
@@ -398,7 +511,11 @@ class TraderMarketScreen extends StatelessWidget {
                   SizedBox(height: 8.h),
                   Row(
                     children: [
-                      Icon(Icons.person_outline, size: 14.sp, color: Colors.grey[500]),
+                      Icon(
+                        Icons.person_outline,
+                        size: 14.sp,
+                        color: Colors.grey[500],
+                      ),
                       SizedBox(width: 4.w),
                       Text(
                         product.farmerName ?? 'Unknown Farmer',
@@ -410,7 +527,10 @@ class TraderMarketScreen extends StatelessWidget {
                       ),
                       const Spacer(),
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 10.w,
+                          vertical: 4.h,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFE8F5E9),
                           borderRadius: BorderRadius.circular(8.r),
@@ -427,16 +547,20 @@ class TraderMarketScreen extends StatelessWidget {
                     ],
                   ),
                   SizedBox(height: 12.h),
-                  // Location if available
                   Row(
                     children: [
-                      Icon(Icons.location_on_outlined, size: 14.sp, color: Colors.grey[400]),
+                      Icon(
+                        Icons.location_on_outlined,
+                        size: 14.sp,
+                        color: const Color(0xFF2D5A27),
+                      ),
                       SizedBox(width: 4.w),
                       Text(
-                        'Kathmandu, Nepal', // Placeholder for now
+                        '${product.latitude.toStringAsFixed(4)}, ${product.longitude.toStringAsFixed(4)}',
                         style: TextStyle(
                           fontSize: 12.sp,
-                          color: Colors.grey[500],
+                          color: const Color(0xFF2D5A27),
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
@@ -451,178 +575,233 @@ class TraderMarketScreen extends StatelessWidget {
   }
 
   void _showOfferContractDialog(BuildContext context, ProductEntity product) {
-    final quantityController = TextEditingController(text: product.quantity.toString());
-    final priceController = TextEditingController(text: product.price.toString());
+    final quantityController = TextEditingController(
+      text: product.quantity.toString(),
+    );
+    final priceController = TextEditingController(
+      text: product.price.toString(),
+    );
     final formKey = GlobalKey<FormState>();
-    bool isStepTwo = false;
 
     showDialog(
       context: context,
-      builder: (dialogContext) => MultiBlocProvider(
-        providers: [
-          BlocProvider.value(value: context.read<ContractBloc>()),
-          BlocProvider.value(value: context.read<LoginBloc>()),
-        ],
-        child: BlocListener<ContractBloc, ContractState>(
-          listener: (context, state) {
-            state.whenOrNull(
-              success: (_) {
-                if (Navigator.of(dialogContext).canPop()) {
-                  Navigator.of(dialogContext).pop();
-                }
-              },
-            );
-          },
-          child: StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24.r)),
-              titlePadding: EdgeInsets.zero,
-              contentPadding: EdgeInsets.zero,
-              actionsPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Custom Header
-                  Container(
-                    padding: EdgeInsets.all(24.w),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF2D5A27).withOpacity(0.05),
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+      builder: (dialogContext) {
+        bool isStepTwo = false;
+        DateTime? selectedExpiryDate;
+
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: context.read<ContractBloc>()),
+            BlocProvider.value(value: context.read<LoginBloc>()),
+          ],
+          child: BlocListener<ContractBloc, ContractState>(
+            listener: (context, state) {
+              state.whenOrNull(
+                success: (_) {
+                  if (Navigator.of(dialogContext).canPop()) {
+                    Navigator.of(dialogContext).pop();
+                  }
+                },
+              );
+            },
+            child: StatefulBuilder(
+              builder: (context, setDialogState) {
+                return AlertDialog(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24.r),
+                  ),
+                  titlePadding: EdgeInsets.zero,
+                  contentPadding: EdgeInsets.zero,
+                  actionsPadding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 12.h,
+                  ),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Custom Header
+                      Container(
+                        padding: EdgeInsets.all(24.w),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2D5A27).withOpacity(0.05),
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(24.r),
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            Container(
+                              padding: EdgeInsets.all(12.w),
+                              decoration: BoxDecoration(
+                                color:
+                                    const Color(0xFF2D5A27).withOpacity(0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                isStepTwo
+                                    ? Icons.edit_document
+                                    : Icons.handshake_rounded,
+                                color: const Color(0xFF2D5A27),
+                                size: 32.sp,
+                              ),
+                            ),
+                            SizedBox(height: 16.h),
+                            Text(
+                              isStepTwo ? 'Set Your Terms' : 'Contract Proposal',
+                              style: TextStyle(
+                                fontSize: 20.sp,
+                                fontWeight: FontWeight.w900,
+                                color: const Color(0xFF1B3A1A),
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+                            SizedBox(height: 4.h),
+                            Text(
+                              'For ${product.name}',
+                              style: TextStyle(
+                                fontSize: 14.sp,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        child: isStepTwo
+                            ? _buildStepTwoContent(
+                                context,
+                                setDialogState,
+                                formKey,
+                                quantityController,
+                                priceController,
+                                selectedExpiryDate,
+                                (date) {
+                                  setDialogState(() {
+                                    selectedExpiryDate = date;
+                                  });
+                                },
+                              )
+                            : _buildStepOneContent(product),
+                      ),
+                    ],
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(dialogContext),
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(
+                          color: Colors.grey[500],
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14.sp,
+                        ),
+                      ),
                     ),
-                    child: Column(
-                      children: [
-                        Container(
-                          padding: EdgeInsets.all(12.w),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF2D5A27).withOpacity(0.1),
-                            shape: BoxShape.circle,
+                    SizedBox(width: 8.w),
+                    if (!isStepTwo)
+                      ElevatedButton(
+                        onPressed: () {
+                          setDialogState(() {
+                            isStepTwo = true;
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2D5A27),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 24.w,
+                            vertical: 12.h,
                           ),
-                          child: Icon(
-                            isStepTwo ? Icons.edit_document : Icons.handshake_rounded,
-                            color: const Color(0xFF2D5A27),
-                            size: 32.sp,
-                          ),
-                        ),
-                        SizedBox(height: 16.h),
-                        Text(
-                          isStepTwo ? 'Set Your Terms' : 'Contract Proposal',
-                          style: TextStyle(
-                            fontSize: 20.sp,
-                            fontWeight: FontWeight.w900,
-                            color: const Color(0xFF1B3A1A),
-                            letterSpacing: -0.5,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.r),
                           ),
                         ),
-                        SizedBox(height: 4.h),
-                        Text(
-                          'For ${product.name}',
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Proceed',
+                              style: TextStyle(
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(width: 8.w),
+                            Icon(Icons.arrow_forward_rounded, size: 18.sp),
+                          ],
+                        ),
+                      )
+                    else
+                      ElevatedButton(
+                        onPressed: () {
+                          if (formKey.currentState!.validate()) {
+                            final loginState =
+                                context.read<LoginBloc>().state;
+                            final traderId = loginState.maybeWhen(
+                              success: (user, _) => user.id,
+                              orElse: () => '',
+                            );
+
+                            if (traderId.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content:
+                                      Text('Please login to offer contract'),
+                                ),
+                              );
+                              return;
+                            }
+
+                            final contract = ContractEntity(
+                              farmerId: product.farmerId ?? '',
+                              middlemanId: traderId,
+                              productId: product.id ?? '',
+                              quantity: double.parse(quantityController.text),
+                              farmerSellingPrice: product.price,
+                              traderSellingPrice:
+                                  double.parse(priceController.text),
+                              startDate: DateTime.now(),
+                              expiryDate: selectedExpiryDate,
+                              status: 'pending',
+                            );
+
+                            context.read<ContractBloc>().add(
+                                  ContractEvent.createContract(contract),
+                                );
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2D5A27),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 24.w,
+                            vertical: 12.h,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                        ),
+                        child: Text(
+                          'Submit Offer',
                           style: TextStyle(
                             fontSize: 14.sp,
-                            color: Colors.grey[600],
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                  
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
-                    child: isStepTwo 
-                      ? _buildStepTwoContent(formKey, quantityController, priceController)
-                      : _buildStepOneContent(product),
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(dialogContext),
-                  child: Text(
-                    'Cancel',
-                    style: TextStyle(
-                      color: Colors.grey[500],
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14.sp,
-                    ),
-                  ),
-                ),
-                SizedBox(width: 8.w),
-                if (!isStepTwo)
-                  ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        isStepTwo = true;
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2D5A27),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
                       ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text('Proceed', style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold)),
-                        SizedBox(width: 8.w),
-                        Icon(Icons.arrow_forward_rounded, size: 18.sp),
-                      ],
-                    ),
-                  )
-                else
-                  ElevatedButton(
-                    onPressed: () {
-                      if (formKey.currentState!.validate()) {
-                        final loginState = context.read<LoginBloc>().state;
-                        final traderId = loginState.maybeWhen(
-                          success: (user, _) => user.id,
-                          orElse: () => '',
-                        );
-
-                        if (traderId.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Please login to offer contract')),
-                          );
-                          return;
-                        }
-
-                        final contract = ContractEntity(
-                          farmerId: product.farmerId ?? '',
-                          middlemanId: traderId,
-                          productId: product.id ?? '',
-                          quantity: double.parse(quantityController.text),
-                          farmerSellingPrice: product.price,
-                          traderSellingPrice: double.parse(priceController.text),
-                          startDate: DateTime.now(),
-                          status: 'pending',
-                        );
-
-                        context.read<ContractBloc>().add(ContractEvent.createContract(contract));
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2D5A27),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                    ),
-                    child: Text('Submit Offer', style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold)),
-                  ),
-              ],
-            );
-          },
-        ),
-      ),
-    ),
-  );
-}
+                  ],
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   Widget _buildStepOneContent(ProductEntity product) {
     return Padding(
@@ -630,21 +809,21 @@ class TraderMarketScreen extends StatelessWidget {
       child: Column(
         children: [
           _buildAgreementItem(
-            Icons.person_outline, 
-            'Farmer', 
-            product.farmerName ?? 'Unknown'
+            Icons.person_outline,
+            'Farmer',
+            product.farmerName ?? 'Unknown',
           ),
           SizedBox(height: 16.h),
           _buildAgreementItem(
-            Icons.payments_outlined, 
-            'Base Price', 
-            'Rs. ${product.price}/kg'
+            Icons.payments_outlined,
+            'Base Price',
+            'Rs. ${product.price}/kg',
           ),
           SizedBox(height: 16.h),
           _buildAgreementItem(
-            Icons.inventory_2_outlined, 
-            'Stock Available', 
-            '${product.quantity} kg'
+            Icons.inventory_2_outlined,
+            'Stock Available',
+            '${product.quantity} kg',
           ),
           SizedBox(height: 24.h),
           Text(
@@ -661,7 +840,15 @@ class TraderMarketScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStepTwoContent(GlobalKey<FormState> formKey, TextEditingController qCtrl, TextEditingController pCtrl) {
+  Widget _buildStepTwoContent(
+    BuildContext context,
+    StateSetter setDialogState,
+    GlobalKey<FormState> formKey,
+    TextEditingController qCtrl,
+    TextEditingController pCtrl,
+    DateTime? expiryDate,
+    Function(DateTime) onDateSelected,
+  ) {
     return Padding(
       padding: EdgeInsets.all(24.w),
       child: Form(
@@ -684,6 +871,57 @@ class TraderMarketScreen extends StatelessWidget {
               icon: Icons.sell_outlined,
               hint: 'e.g. 120',
             ),
+            SizedBox(height: 20.h),
+            _buildFieldLabel('Expiry Date (Optional)'),
+            SizedBox(height: 8.h),
+            InkWell(
+              onTap: () async {
+                final date = await showDatePicker(
+                  context: context,
+                  initialDate: expiryDate ??
+                      DateTime.now().add(const Duration(days: 7)),
+                  firstDate: DateTime.now(),
+                  lastDate: DateTime.now().add(const Duration(days: 365)),
+                );
+                if (date != null) {
+                  onDateSelected(date);
+                }
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 16.w,
+                  vertical: 12.h,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF5F6F2),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.calendar_today_outlined,
+                      color: const Color(0xFF2D5A27),
+                      size: 18.sp,
+                    ),
+                    SizedBox(width: 12.w),
+                    Text(
+                      expiryDate != null
+                          ? DateFormat('MMM d, yyyy').format(expiryDate)
+                          : 'Select an expiry date',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: expiryDate != null
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                        color: expiryDate != null
+                            ? Colors.black
+                            : Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -700,11 +938,19 @@ class TraderMarketScreen extends StatelessWidget {
           children: [
             Text(
               label,
-              style: TextStyle(fontSize: 11.sp, color: Colors.grey[500], fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 11.sp,
+                color: Colors.grey[500],
+                fontWeight: FontWeight.bold,
+              ),
             ),
             Text(
               value,
-              style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.bold, color: const Color(0xFF1B3A1A)),
+              style: TextStyle(
+                fontSize: 15.sp,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF1B3A1A),
+              ),
             ),
           ],
         ),
@@ -742,9 +988,13 @@ class TraderMarketScreen extends StatelessWidget {
           hintText: hint,
           prefixIcon: Icon(icon, color: const Color(0xFF2D5A27), size: 18.sp),
           border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: 16.w,
+            vertical: 12.h,
+          ),
         ),
-        validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+        validator: (value) =>
+            value == null || value.isEmpty ? 'Required' : null,
       ),
     );
   }

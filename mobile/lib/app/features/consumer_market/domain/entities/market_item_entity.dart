@@ -7,6 +7,9 @@ part 'market_item_entity.g.dart';
 abstract class MarketItemEntity with _$MarketItemEntity {
   const factory MarketItemEntity({
     @JsonKey(name: 'contract_id') required String contractId,
+    @JsonKey(name: 'product_id') String? productId,
+    @JsonKey(name: 'farmer_id') String? farmerId,
+    @JsonKey(name: 'middleman_id') String? middlemanId,
     @JsonKey(name: 'product_name') required String productName,
     required String category,
     required double quantity,

@@ -60,7 +60,7 @@ Future<void> init() async {
   sl.registerFactory(() => RegisterFarmerBloc(registerFarmerUseCase: sl(), locationService: sl()));
   sl.registerFactory(() => RegisterTraderBloc(registerTraderUseCase: sl(), locationService: sl()));
   sl.registerFactory(() => RegisterConsumerBloc(registerConsumerUseCase: sl(), locationService: sl()));
-  sl.registerFactory(() => ConsumerMarketBloc(remoteDataSource: sl()));
+  sl.registerFactory(() => ConsumerMarketBloc(remoteDataSource: sl(), productRepository: sl()));
   
   // Features - Product
   sl.registerFactory(() => ProductBloc(
