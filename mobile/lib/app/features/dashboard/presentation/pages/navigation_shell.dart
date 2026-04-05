@@ -42,10 +42,22 @@ class NavigationShell extends StatelessWidget {
   Widget _buildBottomNavigationBar(BuildContext context) {
     return BlocBuilder<LoginBloc, LoginState>(
       builder: (context, state) {
+        // Debug: Print the actual state type and content
+        print('🧭 DEBUG: NavigationShell LoginBloc state type: ${state.runtimeType}');
+        print('🧭 DEBUG: NavigationShell LoginBloc state toString: ${state.toString()}');
+        
         final role = state.maybeWhen(
-          success: (user, _) => user.role,
-          orElse: () => 'farmer',
+          success: (user, _) {
+            print('🧭 DEBUG: NavigationShell found user in success state - role: ${user.role}');
+            return user.role;
+          },
+          orElse: () {
+            print('🧭 DEBUG: NavigationShell not in success state, defaulting to farmer');
+            return 'farmer';
+          },
         );
+
+        print('🧭 DEBUG: NavigationShell bottom nav for role: $role');
 
         // Calculate mapped index for highlighting
         int mappedIndex = 0;
@@ -87,7 +99,7 @@ class NavigationShell extends StatelessWidget {
               currentIndex: mappedIndex,
               onTap: (index) => _onTap(context, index),
             );
-          case 'consumer':
+          case 'customer':
             if (navigationShell.currentIndex == 0) {
               mappedIndex = 0;
             } else if (navigationShell.currentIndex == 8) {
@@ -99,6 +111,7 @@ class NavigationShell extends StatelessWidget {
             } else {
               mappedIndex = 0;
             }
+
             return ConsumerNavigationBar(
               currentIndex: mappedIndex,
               onTap: (index) => _onTap(context, index),
@@ -136,10 +149,10 @@ class NavigationShell extends StatelessWidget {
             case 'farmer':
               title = 'Farmer Dashboard';
               break;
-            case 'trader':
+            case 'middleman':
               title = 'Trader Dashboard';
               break;
-            case 'consumer':
+            case 'customer':
               title = 'Consumer Dashboard';
               break;
             default:
@@ -216,12 +229,10 @@ class NavigationShell extends StatelessWidget {
       case 'farmer':
         _navigateFarmer(context, index);
         break;
-      case 'middlemen':
-      case 'trader':
       case 'middleman':
         _navigateTrader(context, index);
         break;
-      case 'consumer':
+      case 'customer':
         _navigateConsumer(context, index);
         break;
       default:

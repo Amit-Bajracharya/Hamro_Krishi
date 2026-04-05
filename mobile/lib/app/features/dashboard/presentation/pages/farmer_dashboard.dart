@@ -109,8 +109,7 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
                       _buildStatsSection(),
                       SizedBox(height: 32.h),
                       _buildActiveContractsSection(),
-                      SizedBox(height: 32.h),
-                      _buildMarketPricesSection(),
+                    
                       SizedBox(height: 32.h),
                       _buildRecentActivitySection(),
                       SizedBox(height: 100.h), 
@@ -140,7 +139,7 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
         ),
         SizedBox(height: 8.h),
         Text(
-          'Good morning !!',
+          'Good Afternoon !!',
           style: TextStyle(
             fontSize: 24.sp,
             fontWeight: FontWeight.w900,

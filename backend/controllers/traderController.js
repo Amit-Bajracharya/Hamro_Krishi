@@ -17,20 +17,24 @@ exports.createTrader = async (req, res) => {
     const id = randomUUID();
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await db.query(
-      `INSERT INTO auth.users (id, email, encrypted_password, created_at, updated_at, role, aud)
-       VALUES ($1, $2, $3, now(), now(), 'authenticated', 'authenticated')
-       ON CONFLICT (id) DO NOTHING`,
-      [id, email, hashedPassword]
-    );
-
     const result = await db.query(
-      `INSERT INTO public.middlemen (id, name, email, phone, latitude, longitude, business_name, operating_regions)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-      [id, name, email, phone, latitude, longitude, business_name, regionsArray]
+      `INSERT INTO public.middlemen (id, name, email, phone, latitude, longitude, business_name, operating_regions, password_hash)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+      [id, name, email, phone, latitude, longitude, business_name, regionsArray, hashedPassword]
     );
 
-    res.status(201).json({ success: true, data: result.rows[0] });
+    console.log(`🤝 TRADER Registration Successful:`, {
+      id: id,
+      email: email,
+      name: name,
+      timestamp: new Date().toISOString()
+    });
+
+    res.status(201).json({ 
+      success: true, 
+      message: 'Trader registration successful',
+      data: result.rows[0] 
+    });
   } catch (error) {
     console.error('Create Trader Error:', error);
     if (error.code === '23505') {

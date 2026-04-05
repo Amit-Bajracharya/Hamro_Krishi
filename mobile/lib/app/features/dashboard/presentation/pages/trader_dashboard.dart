@@ -109,7 +109,7 @@ class _TraderDashboardState extends State<TraderDashboard> {
         ),
         SizedBox(height: 8.h),
         Text(
-          'Good morning, $userName',
+          'Good Afternoon, $userName',
           style: TextStyle(
             fontSize: 24.sp,
             fontWeight: FontWeight.w900,

@@ -206,9 +206,22 @@ class _LoginScreenState extends State<LoginScreen> {
             // Debug: Print user info
             print('Login successful - User: ${user.name}, Role: ${user.role}');
             
-            // Route all users to the same dashboard route
-            // RoleBasedDashboard will handle showing the correct dashboard based on role
-            context.go(AppRoutes.farmerHome);
+            // Route to appropriate dashboard based on user role
+            switch (user.role) {
+              case 'farmer':
+                context.go(AppRoutes.farmerHome);
+                break;
+              case 'middleman':
+                context.go(AppRoutes.traderHome);
+                break;
+              case 'customer':
+                context.go(AppRoutes.consumerHome);
+                break;
+              default:
+                // Default to farmer dashboard if role is unknown
+                context.go(AppRoutes.farmerHome);
+                break;
+            }
           },
           failure: (error, _) => ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(error)),

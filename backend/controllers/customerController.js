@@ -83,20 +83,24 @@ exports.createConsumer = async (req, res) => {
     const id = randomUUID();
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await db.query(
-      `INSERT INTO auth.users (id, email, encrypted_password, created_at, updated_at, role, aud)
-       VALUES ($1, $2, $3, now(), now(), 'authenticated', 'authenticated')
-       ON CONFLICT (id) DO NOTHING`,
-      [id, email, hashedPassword]
-    );
-
     const result = await db.query(
-      `INSERT INTO public.customers (id, name, email, phone, latitude, longitude)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [id, name, email, phone, latitude, longitude]
+      `INSERT INTO public.customers (id, name, email, phone, latitude, longitude, password_hash)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      [id, name, email, phone, latitude, longitude, hashedPassword]
     );
 
-    res.status(201).json({ success: true, data: result.rows[0] });
+    console.log(`🛒 CONSUMER Registration Successful:`, {
+      id: id,
+      email: email,
+      name: name,
+      timestamp: new Date().toISOString()
+    });
+
+    res.status(201).json({ 
+      success: true, 
+      message: 'Consumer registration successful',
+      data: result.rows[0] 
+    });
   } catch (error) {
     console.error('Create Consumer Error:', error);
     if (error.code === '23505') {
