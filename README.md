@@ -14,7 +14,7 @@
 **Connecting farmers, middlemen, and customers with fair pricing and tamper-proof contracts.**  
 *Built in 54 hours. Solving a problem that's lasted decades.*
 
-[View Demo](#demo) · [Report Bug](https://github.com/Amit-Bajracharya/Hamro_Krishi/issues) · [Contribute](#contributing) · [Contact for Investment](#investment--partnership)
+[Report Bug](https://github.com/Amit-Bajracharya/Hamro_Krishi/issues) · [Contribute](#contributing) · [Contact for Investment](#investment--partnership)
 
 </div>
 
@@ -45,13 +45,6 @@ Nepal's agricultural supply chain is broken — and farmers pay the price.
 | 🚫 **Anti-corruption by Design** | System architecture that eliminates room for price manipulation |
 
 **Core belief: When everyone sees the same data, no one can cheat.**
-
----
-
-## 📱 Screenshots
-
-<img width="1080" height="2400" alt="0" src="https://github.com/user-attachments/assets/7f745bd2-7112-4cd5-b5d8-54e2a045855c" />
-
 
 ---
 
