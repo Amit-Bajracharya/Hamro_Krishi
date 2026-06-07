@@ -50,7 +50,8 @@ Nepal's agricultural supply chain is broken — and farmers pay the price.
 
 ## 📱 Screenshots
 
-> *Coming soon — demo screenshots and screen recordings will be added here*
+<img width="1080" height="2400" alt="0" src="https://github.com/user-attachments/assets/7f745bd2-7112-4cd5-b5d8-54e2a045855c" />
+
 
 ---
 
